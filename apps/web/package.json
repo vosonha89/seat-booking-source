@@ -12,6 +12,8 @@
 	"dependencies": {
 		"@clerk/clerk-react": "^4.0.0",
 		"@seat-booking/shared-types": "*",
+		"@sentry/browser": "^10.59.0",
+		"@sentry/react": "^10.59.0",
 		"axios": "^1.6.0",
 		"react": "^18.0.0",
 		"react-dom": "^18.0.0",
@@ -29,4 +31,3 @@
 		"vite": "^8.0.16"
 	}
 }
-

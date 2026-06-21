@@ -15,6 +15,13 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "baseUrl": ".",
+    "paths": {
+      "@seat-booking/base-logging": ["../base-logging/src/index.ts"],
+      "@seat-booking/shared-types": ["../../packages/shared-types/src/index.ts"],
+      "@seat-booking/shared-errors": ["../../packages/shared-errors/src/index.ts"],
+      "@seat-booking/database": ["../../packages/database/src/index.ts"]
+    }
   }
 }

@@ -28,8 +28,37 @@ services:
     volumes:
       - localstack_data:/var/lib/localstack
 
+  sentry:
+    image: sentry:23.11.0
+    ports:
+      - "9000:9000"
+    environment:
+      SENTRY_SECRET_KEY: sentry-secret-key
+      SENTRY_POSTGRES_HOST: postgres
+      SENTRY_POSTGRES_PORT: 5432
+      SENTRY_POSTGRES_DB: sentry
+      SENTRY_POSTGRES_USER: postgres
+      SENTRY_POSTGRES_PASSWORD: postgres
+      SENTRY_REDIS_HOST: redis
+      SENTRY_REDIS_PORT: 6379
+      SENTRY_REDIS_DB: 0
+    volumes:
+      - sentry_data:/var/lib/sentry
+    depends_on:
+      - postgres
+      - redis
+
+  redis:
+    image: redis:7.2-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
 volumes:
   postgres_data:
   mongo_data:
   localstack_data:
+  sentry_data:
+  redis_data:
 
