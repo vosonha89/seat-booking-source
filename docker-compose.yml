@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   postgres:
-    image: postgres:16.2-alpine
+    image: postgres:16.14-alpine
     environment:
       POSTGRES_DB: seat_booking
       POSTGRES_USER: postgres
@@ -12,14 +12,14 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   mongodb:
-    image: mongo:7.0
+    image: mongo:8.3.4
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
 
   localstack:
-    image: localstack/localstack:3.0
+    image: localstack/localstack:3.14
     ports:
       - "4566:4566"
     environment:
@@ -29,7 +29,7 @@ services:
       - localstack_data:/var/lib/localstack
 
   sentry:
-    image: sentry:23.11.0
+    image: getsentry/sentry:3.12.13-bookworm
     ports:
       - "9000:9000"
     environment:
