@@ -1,0 +1,20 @@
+{
+	"name": "seat-booking",
+	"private": true,
+	"workspaces": [
+		"apps/*",
+		"packages/*"
+	],
+	"scripts": {
+		"start:watch:all": "concurrently -n api-gateway,mock-payment,order-service,payment-service,web -c blue,green,yellow,magenta,cyan \"npm run start:dev -w apps/api-gateway\" \"npm run start:dev -w apps/mock-payment-gateway\" \"npm run start:dev -w apps/order-service\" \"npm run start:dev -w apps/payment-service\" \"npm run dev -w @seat-booking/web\"",
+		"lint": "npm run lint -ws --if-present",
+		"lint:fix": "npm run lint -ws --if-present -- --fix",
+		"format": "npm run format -ws --if-present",
+		"format:fix": "npm run format -ws --if-present -- --write",
+		"test": "npm run test -ws --if-present",
+		"build": "npm run build -ws --if-present"
+	},
+	"devDependencies": {
+		"concurrently": "^9.1.0"
+	}
+}

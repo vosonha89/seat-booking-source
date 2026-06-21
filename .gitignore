@@ -141,3 +141,7 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+AGENT_INSTRUCTIONS.md
+.gitignore
+TODO.md
+implementation_plan.md
