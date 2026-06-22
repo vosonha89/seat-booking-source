@@ -145,3 +145,10 @@ AGENT_INSTRUCTIONS.md
 .gitignore
 TODO.md
 implementation_plan.md
+
+# Common culprits
+package-lock.json
+yarn.lock
+dist/
+*.map
+node_modules/

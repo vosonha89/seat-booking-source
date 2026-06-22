@@ -1,11 +1,11 @@
-const globals = require('globals');
-const tseslint = require('@typescript-eslint/eslint-plugin');
-const react = require('eslint-plugin-react');
-const parser = require('@typescript-eslint/parser');
+import globals from 'globals';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import react from 'eslint-plugin-react';
+import parser from '@typescript-eslint/parser';
 
-module.exports = [
+export default [
   {
-    ignores: ['dist'],
+    ignores: ['dist', 'coverage', '*.js.map'],
     languageOptions: {
       globals: {
         ...globals.browser,
