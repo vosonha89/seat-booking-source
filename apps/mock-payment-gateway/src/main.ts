@@ -9,7 +9,8 @@ async function bootstrap() {
 const app = await NestFactory.create(AppModule);
 
 if (!process.env.PORT) {
-  throw new Error('PORT environment variable is not set');
+  process.env.PORT = '3004'; // Default port for mock-payment-gateway
+  console.log('PORT environment variable not set, using default port 3004');
 }
 
 await app.listen(process.env.PORT);

@@ -11,8 +11,6 @@ export { AuditOrder, AuditPayment };
 export const AppDataSource = new DataSource({
 	type: 'mongodb',
 	url: process.env['MONGO_URI'] ?? 'mongodb://localhost:27017/seat_booking_audit',
-	useNewUrlParser: true,
-	useUnifiedTopology: true,
 	synchronize: true,
 	logging: false,
 	entities: [AuditOrder, AuditPayment],

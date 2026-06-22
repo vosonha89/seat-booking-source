@@ -6,7 +6,19 @@ if (typeof TextEncoder === 'undefined') {
     encode(input: string) {
       return new Uint8Array(Buffer.from(input));
     }
-  };
+    get encoding() {
+      return 'utf-8';
+    }
+    encodeInto(input: string, output: Uint8Array) {
+      const buffer = Buffer.from(input);
+      const copied = Math.min(buffer.length, output.length);
+      buffer.copy(output, 0, 0, copied);
+      return {
+        read: copied,
+        written: copied
+      };
+    }
+  } as unknown as typeof TextEncoder;
 }
 
 // Mock console.error to avoid unnecessary noise in test output

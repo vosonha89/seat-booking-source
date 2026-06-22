@@ -6,12 +6,10 @@ import { AppModule } from './app.module';
  * Creates the app instance and starts listening on the configured port.
  */
 async function bootstrap() {
-const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule);
 
-if (!process.env.PORT) {
-  throw new Error('PORT environment variable is not set');
-}
-
-await app.listen(process.env.PORT);
+  const port = process.env.PORT || 3002;
+  await app.listen(port);
+  console.log(`Order service running on port ${port}`);
 }
 bootstrap();

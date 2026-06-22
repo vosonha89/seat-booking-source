@@ -1,4 +1,5 @@
 import React from 'react';
+import { SeatList } from '../components/SeatList';
 
 /**
  * BookingView - A protected view component for the seat booking interface.
@@ -17,10 +18,7 @@ export function BookingView() {
 					Welcome to the seat booking system. Please select your seats below.
 				</p>
 
-				{/* Add your seat booking components here */}
-				<div className="text-center py-12 text-gray-500">
-					<p>Seat selection interface coming soon...</p>
-				</div>
+				<SeatList />
 			</div>
 		</div>
 	);

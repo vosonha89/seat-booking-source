@@ -1,10 +1,26 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { BookingView } from './BookingView';
+import { useAuth } from '@clerk/react';
+
+vi.mock('@clerk/react', () => ({
+	...vi.importActual('@clerk/react'),
+	useAuth: vi.fn(),
+}));
+
+vi.mock('../components/SeatList', () => ({
+	SeatList: vi.fn(() => <div data-testid="seat-list-component" />),
+}));
 
 describe('BookingView', () => {
 	it('renders seat booking title', () => {
+		(useAuth as vi.Mock).mockReturnValue({
+			isSignedIn: true,
+			isLoaded: true,
+			getToken: vi.fn(),
+		});
+
 		render(
 			<BrowserRouter>
 				<BookingView />
@@ -14,6 +30,12 @@ describe('BookingView', () => {
 	});
 
 	it('renders welcome message', () => {
+		(useAuth as vi.Mock).mockReturnValue({
+			isSignedIn: true,
+			isLoaded: true,
+			getToken: vi.fn(),
+		});
+
 		render(
 			<BrowserRouter>
 				<BookingView />
@@ -24,12 +46,18 @@ describe('BookingView', () => {
 		).toBeInTheDocument();
 	});
 
-	it('renders coming soon message', () => {
+	it('renders seat list component', () => {
+		(useAuth as vi.Mock).mockReturnValue({
+			isSignedIn: true,
+			isLoaded: true,
+			getToken: vi.fn(),
+		});
+
 		render(
 			<BrowserRouter>
 				<BookingView />
 			</BrowserRouter>
 		);
-		expect(screen.getByText('Seat selection interface coming soon...')).toBeInTheDocument();
+		expect(screen.getByTestId('seat-list-component')).toBeInTheDocument();
 	});
 });

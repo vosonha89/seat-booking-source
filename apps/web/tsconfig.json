@@ -11,7 +11,13 @@
 "noEmit": true,
 "jsx": "react-jsx",
 "strict": true,
-"types": ["vite/client"]
+    "types": ["vite/client", "node", "vitest"],
+    "baseUrl": ".",
+    "paths": {
+        "@seat-booking/shared-types": ["../../packages/shared-types/dist"],
+        "@seat-booking/shared-types/*": ["../../packages/shared-types/dist/*"]
+    }
 },
-"include": ["src"]
+"include": ["src"],
+"exclude": ["src/**/*.spec.tsx", "src/jest.setup.ts"]
 }

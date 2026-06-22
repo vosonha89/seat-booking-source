@@ -5,7 +5,7 @@ import parser from '@typescript-eslint/parser';
 
 export default [
   {
-    ignores: ['dist', 'coverage', '*.js.map'],
+    ignores: ['dist/**', 'coverage/**', '*.js.map'],
     languageOptions: {
       globals: {
         ...globals.browser,

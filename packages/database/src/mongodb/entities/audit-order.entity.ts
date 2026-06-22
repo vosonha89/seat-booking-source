@@ -20,11 +20,11 @@ export class AuditOrder {
 	public action!: string;
 
 	/** Previous value of the entity before the action, if applicable. */
-	@Column({ type: 'mixed' })
+	@Column()
 	public oldValue?: unknown;
 
 	/** New value of the entity after the action, if applicable. */
-	@Column({ type: 'mixed' })
+	@Column()
 	public newValue?: unknown;
 
 	/** ID of the user or system that performed the action. */

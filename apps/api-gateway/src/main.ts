@@ -9,12 +9,20 @@ dotenv.config();
  * Creates the app instance and starts listening on the configured port.
  */
 async function bootstrap() {
-const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule);
 
-if (!process.env.PORT) {
-  throw new Error('PORT environment variable is not set');
-}
+	// Enable CORS for frontend development
+	app.enableCors({
+		origin: 'http://localhost:3000',
+		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+		allowedHeaders: ['Content-Type', 'Authorization'],
+		credentials: true,
+	});
 
-await app.listen(process.env.PORT, '0.0.0.0');
+	if (!process.env.PORT) {
+		throw new Error('PORT environment variable is not set');
+	}
+
+	await app.listen(process.env.PORT, '0.0.0.0');
 }
 bootstrap();

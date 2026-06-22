@@ -12,7 +12,9 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"useUnknownInCatchVariables": false,
-		"types": ["node"]
+		"types": ["node"],
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true
 	}
 }
 

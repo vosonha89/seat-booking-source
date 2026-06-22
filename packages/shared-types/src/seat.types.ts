@@ -1,11 +1,7 @@
 /**
  * Represents the possible statuses of a seat.
  */
-export enum SeatStatus {
-	AVAILABLE = 'AVAILABLE',
-	RESERVED = 'RESERVED',
-	BOOKED = 'BOOKED',
-}
+export type SeatStatus = 'AVAILABLE' | 'RESERVED' | 'BOOKED';
 
 /**
  * Represents a seat entity with its properties.
@@ -22,4 +18,11 @@ export interface ISeat {
 	/** Timestamp when the seat was reserved, if any. */
 	reservedAt?: Date;
 }
+
+// Constants for seat status to replace enum
+export const SeatStatusEnum = {
+	AVAILABLE: 'AVAILABLE' as const,
+	RESERVED: 'RESERVED' as const,
+	BOOKED: 'BOOKED' as const,
+};
 
