@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   postgres:
     image: postgres:16.14-alpine
@@ -19,7 +18,7 @@ services:
       - mongo_data:/data/db
 
   localstack:
-    image: localstack/localstack:3.14
+    image: localstack/localstack:3.0.2
     ports:
       - "4566:4566"
     environment:
@@ -29,7 +28,7 @@ services:
       - localstack_data:/var/lib/localstack
 
   sentry:
-    image: getsentry/sentry:3.12.13-bookworm
+    image: getsentry/sentry:latest
     ports:
       - "9000:9000"
     environment:
@@ -61,4 +60,3 @@ volumes:
   localstack_data:
   sentry_data:
   redis_data:
-

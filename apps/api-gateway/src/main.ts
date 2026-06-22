@@ -1,12 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as dotenv from 'dotenv';
+
+dotenv.config();
 
 /**
  * Bootstrap the NestJS application.
  * Creates the app instance and starts listening on the configured port.
  */
 async function bootstrap() {
-	const app = await NestFactory.create(AppModule);
-	await app.listen(process.env.PORT ?? 3001);
+const app = await NestFactory.create(AppModule);
+
+if (!process.env.PORT) {
+  throw new Error('PORT environment variable is not set');
+}
+
+await app.listen(process.env.PORT, '0.0.0.0');
 }
 bootstrap();
