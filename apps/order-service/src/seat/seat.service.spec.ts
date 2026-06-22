@@ -13,6 +13,7 @@ describe('SeatService', () => {
 		mockRepository = {
 			findAll: jest.fn(),
 			findById: jest.fn(),
+			findByIdForUpdate: jest.fn(),
 			updateStatus: jest.fn(),
 		};
 

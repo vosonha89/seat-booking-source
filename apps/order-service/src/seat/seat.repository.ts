@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, EntityManager } from 'typeorm';
 import { Seat } from '@seat-booking/database';
-import { ISeat, SeatStatusEnum } from '@seat-booking/shared-types';
+import { ISeat, SeatStatusEnum, SeatStatus } from '@seat-booking/shared-types';
 import { ISeatRepository } from './interfaces/seat-repository.interface';
 
 /**
@@ -40,6 +40,26 @@ export class SeatRepository implements ISeatRepository {
 	}
 
 	/**
+	 * Finds a single seat by its ID with pessimistic write lock for update operations.
+	 * @param id - Unique identifier of the seat.
+	 * @param manager - Optional TypeORM entity manager for transaction support.
+	 * @returns Promise that resolves to the ISeat object or null if not found.
+	 */
+	public async findByIdForUpdate(id: string, manager?: EntityManager): Promise<ISeat | null> {
+		const repository = manager ? manager.getRepository(Seat) : this.seatRepository;
+
+		const seat = await repository.createQueryBuilder('seat')
+			.setLock('pessimistic_write')
+			.where('seat.id = :id', { id })
+			.getOne();
+
+		if (!seat) {
+			return null;
+		}
+		return this.mapEntityToDto([seat])[0];
+	}
+
+	/**
 	 * Updates the status of a seat.
 	 * @param id - Unique identifier of the seat.
 	 * @param status - New status for the seat.
@@ -49,7 +69,7 @@ export class SeatRepository implements ISeatRepository {
 	 */
 	public async updateStatus(
 		id: string,
-		status: string,
+		status: SeatStatus,
 		reservedBy?: string,
 	): Promise<ISeat> {
 		const seat = await this.seatRepository.findOneBy({ id });

@@ -1,5 +1,6 @@
 import { Entity, Column } from 'typeorm';
 import { BaseEntity } from './base.entity';
+import { OrderStatus } from '@seat-booking/shared-types';
 
 /**
  * Represents an order entity in the PostgreSQL database.
@@ -20,8 +21,8 @@ export class Order extends BaseEntity {
 	public accountId!: string;
 
 	/** Current status of the order. */
-	@Column({ length: 20, default: 'PENDING' })
-	public status!: string;
+	@Column({ length: 20, default: OrderStatus.PENDING })
+	public status!: OrderStatus;
 
 	/** Idempotency key to prevent duplicate order creation. */
 	@Column({ name: 'idempotency_key', length: 255, unique: true })

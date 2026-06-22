@@ -1,4 +1,5 @@
 import { ISeat, SeatStatus } from '@seat-booking/shared-types';
+import { EntityManager } from 'typeorm';
 
 /**
  * Interface for seat repository operations.
@@ -17,6 +18,14 @@ export interface ISeatRepository {
 	 * @returns Promise that resolves to the ISeat object or null if not found.
 	 */
 	findById(id: string): Promise<ISeat | null>;
+
+	/**
+	 * Finds a single seat by its ID with pessimistic write lock for update operations.
+	 * @param id - Unique identifier of the seat.
+	 * @param manager - Optional TypeORM entity manager for transaction support.
+	 * @returns Promise that resolves to the ISeat object or null if not found.
+	 */
+	findByIdForUpdate(id: string, manager?: EntityManager): Promise<ISeat | null>;
 
 	/**
 	 * Updates the status of a seat.

@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BaseLoggingModule } from '@seat-booking/base-logging';
 import { SeatModule } from './seat/seat.module';
+import { OrderModule } from './order/order.module';
 import { Seat, Order, WebhookLog } from '@seat-booking/database';
 
 /**
@@ -24,6 +25,7 @@ import { Seat, Order, WebhookLog } from '@seat-booking/database';
 			entities: [Seat, Order, WebhookLog],
 		}),
 		SeatModule,
+		OrderModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
