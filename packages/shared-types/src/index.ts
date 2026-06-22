@@ -13,3 +13,9 @@ export * from './payment.types';
  */
 export * from './seat.types';
 
+// Explicit re-exports for named constants
+import { SeatStatusEnum } from './seat.types';
+import { OrderStatus } from './order.types';
+import { PaymentStatus } from './payment.types';
+
+export { SeatStatusEnum, OrderStatus, PaymentStatus };
