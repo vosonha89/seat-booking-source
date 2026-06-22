@@ -5,6 +5,8 @@ import {
 	HttpCode,
 	HttpStatus,
 	Inject,
+	Get,
+	Param,
 } from '@nestjs/common';
 import { IOrderService } from './interfaces/order-service.interface';
 import { IOrderServiceSymbol } from './tokens';
@@ -34,5 +36,15 @@ export class OrderController {
 		// TODO: Get userId from auth context (Clerk)
 		const userId = '1'; // Temporary placeholder
 		return this.orderService.createOrder(seatId, userId, accountId);
+	}
+
+	/**
+	 * Gets an order by id.
+	 * @param id - Order id.
+	 * @returns Promise that resolves to the found IOrder object or null.
+	 */
+	@Get(':id')
+	public async getOrder(@Param('id') id: string): Promise<IOrder | null> {
+		return this.orderService.findById(id);
 	}
 }

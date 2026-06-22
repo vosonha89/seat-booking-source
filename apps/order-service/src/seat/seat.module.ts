@@ -23,6 +23,6 @@ import { Seat } from '@seat-booking/database';
 			useClass: SeatRepository,
 		},
 	],
-	exports: [ISeatServiceSymbol],
+	exports: [ISeatServiceSymbol, ISeatRepositorySymbol],
 })
 export class SeatModule {}
