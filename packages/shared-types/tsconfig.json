@@ -3,9 +3,8 @@
 		"target": "ES2022",
 		"module": "CommonJS",
 		"moduleResolution": "node",
-
 		"declaration": true,
-		"outDir": "dist",
+		"outDir": "dist/cjs",
 		"rootDir": "src",
 		"strict": true,
 		"esModuleInterop": true,
@@ -13,7 +12,9 @@
 		"forceConsistentCasingInFileNames": true,
 		"types": ["node"]
 	},
-	"include": ["src/**/*.ts"]
+	"include": ["src/**/*.ts"],
+	"ts-node": {
+		"esm": false
+	}
 }
-
 

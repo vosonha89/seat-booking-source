@@ -1,11 +1,5 @@
 import React from "react";
-import { ISeat, SeatStatus } from "@seat-booking/shared-types";
-
-const SeatStatusEnum = {
-	AVAILABLE: "AVAILABLE" as const,
-	RESERVED: "RESERVED" as const,
-	BOOKED: "BOOKED" as const,
-};
+import { ISeat, SeatStatusEnum } from "@seat-booking/shared-types";
 
 interface SeatCardProps {
 	seat: ISeat;

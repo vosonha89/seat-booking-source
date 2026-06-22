@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ISeat } from '@seat-booking/shared-types';
+import { ISeat, SeatStatus } from '@seat-booking/shared-types';
 import { ISeatService } from './interfaces/seat-service.interface';
 import { ISeatRepository } from './interfaces/seat-repository.interface';
 import { ISeatRepositorySymbol } from './tokens';
@@ -42,7 +42,7 @@ export class SeatService implements ISeatService {
 	 */
 	public async updateStatus(
 		id: string,
-		status: string,
+		status: SeatStatus,
 		reservedBy?: string,
 	): Promise<ISeat> {
 		return this.seatRepository.updateStatus(id, status, reservedBy);

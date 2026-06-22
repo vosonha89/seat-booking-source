@@ -27,7 +27,13 @@ export default defineConfig({
 			"@testing-library/jest-dom": resolve(__dirname, "../..", "node_modules/@testing-library/jest-dom"),
 			"@testing-library/user-event": resolve(__dirname, "../..", "node_modules/@testing-library/user-event"),
 			"react/jsx-dev-runtime": resolve(__dirname, "../..", "node_modules/react/jsx-dev-runtime.js"),
-			"@seat-booking/shared-types": resolve(__dirname, "../..", "packages/shared-types/dist"),
+			"@seat-booking/shared-types": resolve(__dirname, "../..", "packages/shared-types/dist/esm"),
 		},
+	},
+	optimizeDeps: {
+		include: ["@seat-booking/shared-types"],
+	},
+	ssr: {
+		noExternal: ["@seat-booking/shared-types"],
 	},
 });

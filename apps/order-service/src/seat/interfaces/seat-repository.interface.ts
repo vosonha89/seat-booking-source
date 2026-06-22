@@ -1,4 +1,4 @@
-import { ISeat } from '@seat-booking/shared-types';
+import { ISeat, SeatStatus } from '@seat-booking/shared-types';
 
 /**
  * Interface for seat repository operations.
@@ -26,5 +26,5 @@ export interface ISeatRepository {
 	 * @returns Promise that resolves to the updated ISeat object.
 	 * @throws Error if seat with specified ID is not found.
 	 */
-	updateStatus(id: string, status: string, reservedBy?: string): Promise<ISeat>;
+	updateStatus(id: string, status: SeatStatus, reservedBy?: string): Promise<ISeat>;
 }
