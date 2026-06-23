@@ -6,7 +6,7 @@ import {
 	Navigate,
 } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
-import { SignInView, BookingView } from "./views";
+import { SignInView, BookingView, PaymentProgressView } from "./views";
 import { useAuth } from "@clerk/react";
 import { Layout } from "./components/Layout";
 import "./styles.css";
@@ -48,6 +48,16 @@ export function App() {
 						<ProtectedRoute>
 							<Layout>
 								<BookingView />
+							</Layout>
+						</ProtectedRoute>
+					}
+				/>
+				<Route
+					path="/payment-progress"
+					element={
+						<ProtectedRoute>
+							<Layout>
+								<PaymentProgressView />
 							</Layout>
 						</ProtectedRoute>
 					}

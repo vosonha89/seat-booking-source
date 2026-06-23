@@ -56,11 +56,13 @@ export class AppService {
 				"http://localhost:3002",
 			);
 			const webhookId = `webhook-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+			const transactionId = `txn-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
 			this.logger.log("Calling payment webhook", {
 				orderId,
 				status,
 				webhookId,
+				transactionId,
 				url: resolvedUrl,
 			});
 
@@ -70,6 +72,7 @@ export class AppService {
 					webhookId,
 					orderId,
 					status,
+					transactionId,
 				},
 				{
 					timeout: 5000,

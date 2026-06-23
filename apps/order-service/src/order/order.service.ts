@@ -1,6 +1,7 @@
 import { Injectable, Inject, ConflictException, Logger } from '@nestjs/common';
 import {
 	IOrder,
+	IPayment,
 	OrderStatus,
 	SeatStatusEnum,
 	PaymentStatus,
@@ -152,6 +153,22 @@ export class OrderService implements IOrderService {
 	 */
 	public async findById(id: string): Promise<IOrder | null> {
 		return this.orderRepository.findById(id);
+	}
+
+	/**
+	 * Finds an order with its associated payment by order ID.
+	 * @param id - Unique identifier of the order.
+	 * @returns Promise that resolves to an object containing the order and payment, or null if the order is not found.
+	 */
+	public async findWithPayment(
+		id: string,
+	): Promise<{ order: IOrder; payment: IPayment | null } | null> {
+		const order = await this.orderRepository.findById(id);
+		if (!order) {
+			return null;
+		}
+		const payment = await this.paymentRepository.findByOrderId(id);
+		return { order, payment };
 	}
 
 	/**

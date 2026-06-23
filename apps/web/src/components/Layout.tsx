@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth, useUser } from '@clerk/react';
+import { Link, useLocation } from 'react-router-dom';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,6 +10,7 @@ export function Layout({ children }: LayoutProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const { signOut } = useAuth();
   const { user } = useUser();
+  const location = useLocation();
 
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
@@ -28,12 +30,24 @@ export function Layout({ children }: LayoutProps) {
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            {/* Logo/Title */}
-            <div className="flex items-center">
-              <h1 className="text-xl font-semibold text-gray-900">
-                Seat Booking
-              </h1>
-            </div>
+			{/* Logo/Title + Nav */}
+			<div className="flex items-center space-x-6">
+				<h1 className="text-xl font-semibold text-gray-900">
+					Seat Booking
+				</h1>
+				<nav className="hidden sm:flex items-center space-x-1">
+					<Link
+						to="/booking"
+						className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+							location.pathname === '/booking'
+								? 'bg-gray-100 text-gray-900'
+								: 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+						}`}
+					>
+						Booking
+					</Link>
+				</nav>
+			</div>
 
             {/* User Profile */}
             <div className="relative">

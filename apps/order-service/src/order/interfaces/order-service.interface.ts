@@ -1,4 +1,4 @@
-import { IOrder } from '@seat-booking/shared-types';
+import { IOrder, IPayment } from '@seat-booking/shared-types';
 
 /**
  * Interface for order service operations.
@@ -26,6 +26,13 @@ export interface IOrderService {
 	 * @returns Promise that resolves to the IOrder object or null if not found.
 	 */
 	findById(id: string): Promise<IOrder | null>;
+
+	/**
+	 * Finds an order with its associated payment by order ID.
+	 * @param id - Unique identifier of the order.
+	 * @returns Promise that resolves to an object containing the order and payment, or null if the order is not found.
+	 */
+	findWithPayment(id: string): Promise<{ order: IOrder; payment: IPayment | null } | null>;
 
 	/**
 	 * Updates the payment status of an order.

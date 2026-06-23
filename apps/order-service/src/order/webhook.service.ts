@@ -8,6 +8,7 @@ import { Order } from '@seat-booking/database';
 import { Seat } from '@seat-booking/database';
 import { WebhookLog } from '@seat-booking/database';
 import { AuditPayment } from '@seat-booking/database';
+import { Payment } from '@seat-booking/database';
 import { Inject } from '@nestjs/common';
 import { IOrderRepository } from './interfaces/order-repository.interface';
 import { IOrderRepositorySymbol } from './tokens';
@@ -131,6 +132,30 @@ export class WebhookService {
 				newStatus: newOrderStatus,
 			});
 
+			// Find and update payment record
+			this.logger.debug('Finding payment for order', {
+				orderId: payload.orderId,
+			});
+			const payment = (await queryRunner.manager.findOne(Payment, {
+				where: { orderId: payload.orderId },
+				lock: { mode: 'pessimistic_write' },
+			})) as Payment | null;
+
+			if (payment) {
+				const oldPaymentStatus = payment.status;
+				payment.status = payload.status;
+				payment.updatedAt = new Date();
+				if (payload.transactionId) {
+					payment.transactionId = payload.transactionId;
+				}
+				this.logger.debug('Updated payment status', {
+					orderId: payload.orderId,
+					oldStatus: oldPaymentStatus,
+					newStatus: payment.status,
+					transactionId: payload.transactionId,
+				});
+			}
+
 			// Update seat status
 			const oldSeatStatus = seat.status;
 			let newSeatStatus = oldSeatStatus;
@@ -162,6 +187,9 @@ export class WebhookService {
 			// Save all changes
 			await queryRunner.manager.save(order);
 			await queryRunner.manager.save(seat);
+			if (payment) {
+				await queryRunner.manager.save(payment);
+			}
 			await queryRunner.manager.save(webhookLog);
 
 			await queryRunner.commitTransaction();

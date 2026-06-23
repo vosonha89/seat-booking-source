@@ -55,4 +55,6 @@ export interface IWebhookPayload {
 	orderId: string;
 	/** Status of the payment. */
 	status: PaymentStatus;
+	/** Transaction ID from the payment gateway. */
+	transactionId?: string;
 }

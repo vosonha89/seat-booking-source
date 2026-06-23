@@ -6,6 +6,7 @@ import { Order } from '@seat-booking/database';
 import { Seat } from '@seat-booking/database';
 import { WebhookLog } from '@seat-booking/database';
 import { AuditPayment } from '@seat-booking/database';
+import { Payment } from '@seat-booking/database';
 import { OrderStatus } from '@seat-booking/shared-types';
 import { PaymentStatus } from '@seat-booking/shared-types';
 import { IWebhookPayload } from '@seat-booking/shared-types';
@@ -74,12 +75,13 @@ describe('WebhookService', () => {
 	});
 
 	describe('processWebhook', () => {
-		it('should process a valid webhook and update order/seat status', async () => {
+		it('should process a valid webhook and update order/seat/payment status', async () => {
 			// Arrange
 			const payload: IWebhookPayload = {
 				webhookId: 'webhook-123',
 				orderId: 'order-456',
 				status: PaymentStatus.SUCCESS,
+				transactionId: 'txn-abc-123',
 			};
 
 			const mockOrder = {
@@ -94,6 +96,15 @@ describe('WebhookService', () => {
 				id: 'seat-789',
 				status: 'RESERVED',
 			} as Seat;
+
+			const mockPayment = {
+				id: 'payment-abc',
+				orderId: 'order-456',
+				status: PaymentStatus.PENDING,
+				amount: 10000,
+				idempotencyKey: 'order-123-abc',
+				updatedAt: new Date(),
+			} as Payment;
 
 			const mockWebhookLog = null;
 
@@ -124,6 +135,8 @@ describe('WebhookService', () => {
 					return Promise.resolve(mockOrder);
 				} else if (entity === Seat) {
 					return Promise.resolve(mockSeat);
+				} else if (entity === Payment) {
+					return Promise.resolve(mockPayment);
 				}
 				return Promise.resolve(null);
 			});
@@ -152,7 +165,13 @@ describe('WebhookService', () => {
 				Seat,
 				expect.objectContaining({ where: { id: mockOrder.seatId } }),
 			);
-			expect(queryRunner.manager.save).toHaveBeenCalledTimes(3); // order, seat, webhook log
+			expect(queryRunner.manager.findOne).toHaveBeenCalledWith(
+				Payment,
+				expect.objectContaining({ where: { orderId: payload.orderId } }),
+			);
+			expect(mockPayment.status).toBe(PaymentStatus.SUCCESS);
+			expect(mockPayment.transactionId).toBe('txn-abc-123');
+			expect(queryRunner.manager.save).toHaveBeenCalledTimes(4); // order, seat, payment, webhook log
 			expect(queryRunner.commitTransaction).toHaveBeenCalled();
 			expect(auditPaymentRepository.create).toHaveBeenCalled();
 			expect(auditPaymentRepository.save).toHaveBeenCalled();

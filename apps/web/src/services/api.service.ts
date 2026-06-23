@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ISeat, IOrder, OrderStatus } from '@seat-booking/shared-types';
+import { ISeat, IOrder, OrderStatus, IPayment } from '@seat-booking/shared-types';
 
 const API_BASE_URL = import.meta.env.VITE_API_GATEWAY_URL || 'http://localhost:3001';
 
@@ -23,7 +23,7 @@ export const apiService = {
 	},
 	orders: {
 		create: async (seatId: string, token?: string): Promise<IOrder> => {
-			const headers: any = {};
+			const headers: Record<string, string> = {};
 			if (token) {
 				headers.Authorization = `Bearer ${token}`;
 			}
@@ -37,11 +37,25 @@ export const apiService = {
 			return response.data;
 		},
 		getStatus: async (orderId: string, token?: string): Promise<IOrder> => {
-			const headers: any = {};
+			const headers: Record<string, string> = {};
 			if (token) {
 				headers.Authorization = `Bearer ${token}`;
 			}
 			const response = await apiClient.get(`/api/orders/${orderId}`, { headers });
+			return response.data;
+		},
+		getWithPayment: async (
+			orderId: string,
+			token?: string,
+		): Promise<{ order: IOrder; payment: IPayment | null }> => {
+			const headers: Record<string, string> = {};
+			if (token) {
+				headers.Authorization = `Bearer ${token}`;
+			}
+			const response = await apiClient.get(
+				`/api/orders/${orderId}/status`,
+				{ headers },
+			);
 			return response.data;
 		},
 	},
