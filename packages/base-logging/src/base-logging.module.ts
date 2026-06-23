@@ -2,6 +2,11 @@ import { Global, Module } from '@nestjs/common';
 import { BaseLoggingService } from './base-logging.service';
 import { IBaseLoggingConfigSymbol, IBaseLoggingServiceSymbol } from './tokens';
 import { IBaseLoggingConfig } from './interfaces';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// Load environment variables early
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 
 /**
  * Global NestJS module providing Sentry-based error tracking.
@@ -15,7 +20,7 @@ import { IBaseLoggingConfig } from './interfaces';
   providers: [
     {
       provide: IBaseLoggingConfigSymbol,
-      useValue: {
+      useFactory: (): IBaseLoggingConfig => ({
         dsn: process.env.SENTRY_DSN,
         environment: process.env.NODE_ENV,
         release: process.env.SENTRY_RELEASE,
@@ -24,7 +29,7 @@ import { IBaseLoggingConfig } from './interfaces';
         debug: process.env.SENTRY_DEBUG === 'true',
         enablePerformanceMonitoring: process.env.SENTRY_ENABLE_PERFORMANCE_MONITORING === 'true',
         enableTracing: process.env.SENTRY_ENABLE_TRACING === 'true',
-      } as IBaseLoggingConfig,
+      }),
     },
     {
       provide: IBaseLoggingServiceSymbol,

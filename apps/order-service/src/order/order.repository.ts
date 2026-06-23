@@ -11,7 +11,7 @@ import { IOrderRepository } from './interfaces/order-repository.interface';
 @Injectable()
 export class OrderRepository implements IOrderRepository {
 	constructor(
-		@InjectRepository(Order)
+		@InjectRepository(Order, 'postgres')
 		private readonly orderRepository: Repository<Order>,
 	) {}
 

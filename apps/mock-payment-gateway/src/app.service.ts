@@ -43,10 +43,12 @@ export class AppService {
 		try {
 			// Replace order-service with localhost for local development
 			const resolvedUrl = callbackUrl.replace('http://order-service:3002', 'http://localhost:3002');
+			const webhookId = `webhook-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-			this.logger.log('Calling payment webhook', { orderId, status, url: resolvedUrl });
+			this.logger.log('Calling payment webhook', { orderId, status, webhookId, url: resolvedUrl });
 
 			await axios.post(resolvedUrl, {
+				webhookId,
 				orderId,
 				status,
 			}, {

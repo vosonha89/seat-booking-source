@@ -26,22 +26,44 @@ export class BaseLoggingService implements IBaseLoggingService, OnModuleInit, On
    * Configures Sentry with DSN, environment, release, and sampling rates.
    */
   onModuleInit(): void {
-    Sentry.init({
-      dsn: this.config.dsn,
-      environment: this.config.environment,
-      release: this.config.release,
-      tracesSampleRate: this.config.tracesSampleRate ?? 0.1,
-      profilesSampleRate: this.config.profilesSampleRate ?? 0.1,
-      debug: this.config.debug ?? false,
-      integrations: [
-        new Sentry.Integrations.Http({ tracing: true }),
-        new Sentry.Integrations.Console(),
-      ],
-    });
+    // Only initialize Sentry if we have a valid DSN
+    if (this.config.dsn && this.isValidSentryDsn(this.config.dsn)) {
+      Sentry.init({
+        dsn: this.config.dsn,
+        environment: this.config.environment,
+        release: this.config.release,
+        tracesSampleRate: this.config.tracesSampleRate ?? 0.1,
+        profilesSampleRate: this.config.profilesSampleRate ?? 0.1,
+        debug: this.config.debug ?? false,
+        integrations: [
+          new Sentry.Integrations.Http({ tracing: true }),
+          new Sentry.Integrations.Console(),
+        ],
+      });
 
-    if (this.config.enablePerformanceMonitoring) {
-      Sentry.captureMessage('Application startup', 'info');
+      if (this.config.enablePerformanceMonitoring) {
+        Sentry.captureMessage('Application startup', 'info');
+      }
+    } else {
+      // If DSN is invalid or missing, log a warning (but don't crash)
+      const message = this.config.dsn
+        ? `Sentry DSN "${this.config.dsn}" is invalid. Sentry will not be initialized.`
+        : 'Sentry DSN is not provided. Sentry will not be initialized.';
+
+      console.warn(message);
     }
+  }
+
+  /**
+   * Validates a Sentry DSN format.
+   *
+   * @param dsn - The DSN to validate.
+   * @returns True if the DSN is valid, false otherwise.
+   */
+  private isValidSentryDsn(dsn: string): boolean {
+    // Valid DSN format: http(s)://<public_key>@<host>:<port>/<project_id>
+    const dsnRegex = /^https?:\/\/[^\s@]+@[^\s/:]+(?:\:\d+)?\/\d+$/;
+    return dsnRegex.test(dsn);
   }
 
   /**

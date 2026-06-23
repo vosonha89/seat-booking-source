@@ -57,7 +57,7 @@ describe('OrderService', () => {
 					useValue: mockSeatRepository,
 				},
 				{
-					provide: DataSource,
+					provide: 'postgresDataSource',
 					useValue: mockDataSource,
 				},
 				{

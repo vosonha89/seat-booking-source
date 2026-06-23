@@ -11,7 +11,7 @@ import { Seat } from '@seat-booking/database';
  * Registers the seat controller, service, and repository with dependency injection.
  */
 @Module({
-	imports: [TypeOrmModule.forFeature([Seat])],
+	imports: [TypeOrmModule.forFeature([Seat], 'postgres')],
 	controllers: [SeatController],
 	providers: [
 		{

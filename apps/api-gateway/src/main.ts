@@ -1,8 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 
-dotenv.config();
+// Load environment variables from .env file in the service's root directory
+dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
 
 /**
  * Bootstrap the NestJS application.

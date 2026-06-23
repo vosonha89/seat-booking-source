@@ -12,10 +12,12 @@
 		"format": "npm run format -ws --if-present",
 		"format:fix": "npm run format -ws --if-present -- --write",
 		"test": "npm run test -ws --if-present",
-		"build": "npm run build -ws --if-present"
+		"build": "npm run build -ws --if-present",
+		"setup:sentry": "node setup-sentry.js"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.5.0",
+		"axios": "^1.18.1",
 		"concurrently": "^9.1.0",
 		"postcss": "^8.5.15",
 		"tailwindcss": "^4.3.1"

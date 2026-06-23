@@ -17,7 +17,7 @@ export class SqsConsumerService implements OnModuleInit {
 
   constructor(private readonly appService: AppService) {
     this.sqsClient = new SQSClient({
-      region: process.env.AWS_REGION || 'ap-southeast-1',
+      region: process.env.AWS_REGION || 'us-east-1',
       endpoint: process.env.SQS_ENDPOINT || 'http://localhost:4566',
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'test',

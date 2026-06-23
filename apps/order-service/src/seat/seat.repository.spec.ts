@@ -20,7 +20,7 @@ describe('SeatRepository', () => {
 			providers: [
 				SeatRepository,
 				{
-					provide: getRepositoryToken(Seat),
+					provide: getRepositoryToken(Seat, 'postgres'),
 					useValue: typeOrmRepository,
 				},
 			],

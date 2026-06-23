@@ -5,7 +5,7 @@ import { AppService } from './app.service';
 import { BaseLoggingModule } from '@seat-booking/base-logging';
 import { SeatModule } from './seat/seat.module';
 import { OrderModule } from './order/order.module';
-import { Seat, Order, WebhookLog } from '@seat-booking/database';
+import { Seat, Order, WebhookLog, AuditPayment } from '@seat-booking/database';
 
 /**
  * Root application module configuring the order service.
@@ -14,6 +14,7 @@ import { Seat, Order, WebhookLog } from '@seat-booking/database';
 	imports: [
 		BaseLoggingModule,
 		TypeOrmModule.forRoot({
+			name: 'postgres',
 			type: 'postgres',
 			host: process.env['POSTGRES_HOST'] ?? 'localhost',
 			port: Number(process.env['POSTGRES_PORT'] ?? 5432),
@@ -23,6 +24,16 @@ import { Seat, Order, WebhookLog } from '@seat-booking/database';
 			synchronize: true,
 			logging: false,
 			entities: [Seat, Order, WebhookLog],
+		}),
+		TypeOrmModule.forRoot({
+			name: 'mongodb',
+			type: 'mongodb',
+			host: process.env['MONGODB_HOST'] ?? 'localhost',
+			port: Number(process.env['MONGODB_PORT'] ?? 27017),
+			database: process.env['MONGODB_DB'] ?? 'seat_booking_audit',
+			synchronize: true,
+			logging: false,
+			entities: [AuditPayment],
 		}),
 		SeatModule,
 		OrderModule,

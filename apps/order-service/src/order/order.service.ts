@@ -7,6 +7,7 @@ import { ISeatRepository } from '../seat/interfaces/seat-repository.interface';
 import { IOrderRepositorySymbol } from './tokens';
 import { ISeatRepositorySymbol } from '../seat/tokens';
 import { DataSource } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
 import { SqsProducerService } from './sqs-producer.service';
 
 /**
@@ -20,6 +21,7 @@ export class OrderService implements IOrderService {
 		private readonly orderRepository: IOrderRepository,
 		@Inject(ISeatRepositorySymbol)
 		private readonly seatRepository: ISeatRepository,
+		@InjectDataSource('postgres')
 		private readonly dataSource: DataSource,
 		private readonly sqsProducerService: SqsProducerService,
 	) {}

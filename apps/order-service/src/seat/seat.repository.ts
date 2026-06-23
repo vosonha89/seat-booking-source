@@ -11,7 +11,7 @@ import { ISeatRepository } from './interfaces/seat-repository.interface';
 @Injectable()
 export class SeatRepository implements ISeatRepository {
 	constructor(
-		@InjectRepository(Seat)
+		@InjectRepository(Seat, 'postgres')
 		private readonly seatRepository: Repository<Seat>,
 	) {}
 
