@@ -5,6 +5,22 @@ import { IOrderServiceSymbol } from './tokens';
 import { OrderStatus } from '@seat-booking/shared-types';
 import { ConflictException } from '@nestjs/common';
 
+/**
+ * Helper to create a mock IncomingMessage with auth headers injected
+ * by the api-gateway Clerk middleware.
+ */
+function createMockRequest(
+	userId = 'user-123',
+	accountId = 'account-789',
+): { headers: Record<string, string> } {
+	return {
+		headers: {
+			'x-user-id': userId,
+			'x-user-account-id': accountId,
+		},
+	};
+}
+
 describe('OrderController', () => {
 	let controller: OrderController;
 	let mockOrderService: Partial<IOrderService>;
@@ -35,7 +51,7 @@ describe('OrderController', () => {
 	});
 
 	describe('createOrder', () => {
-		it('should create order with valid input', async () => {
+		it('should create order with valid input using forwarded auth headers', async () => {
 			const userId = 'user-123';
 			const seatId = 'seat-456';
 			const accountId = 'account-789';
@@ -54,13 +70,46 @@ describe('OrderController', () => {
 				orderData,
 			);
 
-			const result = await controller.createOrder({ seatId, accountId });
+			const result = await controller.createOrder(
+				{ seatId },
+				createMockRequest(userId, accountId),
+			);
 
 			expect(result).toEqual(orderData);
 			expect(mockOrderService.createOrder).toHaveBeenCalledWith(
 				seatId,
-				expect.any(String),
+				userId,
 				accountId,
+			);
+		});
+
+		it('should fallback to anonymous when no auth headers present', async () => {
+			const seatId = 'seat-456';
+			const orderData = {
+				id: 'order-123',
+				userId: 'anonymous',
+				seatId,
+				accountId: 'anonymous',
+				status: OrderStatus.PENDING,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+				idempotencyKey: 'test-idempotency-key',
+			};
+
+			(mockOrderService.createOrder as jest.Mock).mockResolvedValue(
+				orderData,
+			);
+
+			const result = await controller.createOrder(
+				{ seatId },
+				{ headers: {} },
+			);
+
+			expect(result).toEqual(orderData);
+			expect(mockOrderService.createOrder).toHaveBeenCalledWith(
+				seatId,
+				'anonymous',
+				'anonymous',
 			);
 		});
 
@@ -73,7 +122,10 @@ describe('OrderController', () => {
 			);
 
 			await expect(
-				controller.createOrder({ seatId, accountId }),
+				controller.createOrder(
+					{ seatId },
+					createMockRequest('user-123', accountId),
+				),
 			).rejects.toThrow(ConflictException);
 		});
 	});

@@ -16,22 +16,36 @@ export function SeatList() {
 	const navigate = useNavigate();
 
 	useEffect(() => {
+		let cancelled = false;
+		const controller = new AbortController();
+
 		const fetchSeats = async () => {
 			try {
 				setLoading(true);
 				setError(null);
 				const token = await getToken();
+				if (cancelled || controller.signal.aborted) return;
 				const data = await apiService.seats.getAll(token || undefined);
-				setSeats(data);
+				if (!cancelled) {
+					setSeats(data);
+				}
 			} catch (err) {
+				if (cancelled || controller.signal.aborted) return;
 				console.error('Error fetching seats:', err);
 				setError('Failed to load seats');
 			} finally {
-				setLoading(false);
+				if (!cancelled) {
+					setLoading(false);
+				}
 			}
 		};
 
-		fetchSeats();
+		void fetchSeats();
+
+		return () => {
+			cancelled = true;
+			controller.abort();
+		};
 	}, [getToken]);
 
 	const handleSeatClick = (seat: ISeat) => {

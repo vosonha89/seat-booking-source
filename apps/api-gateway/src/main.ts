@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { createProxyMiddleware, RequestHandler } from 'http-proxy-middleware';
+import { Clerk } from '@clerk/clerk-sdk-node';
 import * as dotenv from 'dotenv';
 import * as http from 'http';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -11,6 +12,55 @@ import * as path from 'path';
 
 // Load environment variables from .env file in the service's root directory
 dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
+
+const clerkSecretKey = process.env.CLERK_SECRET_KEY;
+if (!clerkSecretKey) {
+	throw new Error('CLERK_SECRET_KEY environment variable is not set');
+}
+const clerk = Clerk({ secretKey: clerkSecretKey });
+
+/**
+ * Express middleware that verifies a Clerk JWT from the Authorization header.
+ * On success it attaches x-user-id and x-user-account-id headers so the
+ * downstream service can trust the identity without calling Clerk again.
+ * On failure it responds with 401 Unauthorized.
+ */
+async function clerkAuthMiddleware(
+	req: http.IncomingMessage,
+	res: http.ServerResponse,
+	next: (err?: Error) => void,
+): Promise<void> {
+	const authHeader = req.headers.authorization;
+	const token = authHeader?.startsWith('Bearer ')
+		? authHeader.slice(7)
+		: undefined;
+
+	if (!token) {
+		res.writeHead(401, { 'Content-Type': 'application/json' });
+		res.end(JSON.stringify({ statusCode: 401, message: 'Missing Bearer token' }));
+		return;
+	}
+
+	try {
+		const payload = await clerk.verifyToken(token) as { sub?: string };
+		if (!payload || !payload.sub) {
+			res.writeHead(401, { 'Content-Type': 'application/json' });
+			res.end(JSON.stringify({ statusCode: 401, message: 'Invalid token claims' }));
+			return;
+		}
+
+		// Inject trusted identity headers for downstream services.
+		req.headers['x-user-id'] = payload.sub;
+		// Use sub as accountId so each user has their own FIFO group.
+		req.headers['x-user-account-id'] = payload.sub;
+
+		next();
+	} catch (err) {
+		const message = err instanceof Error ? err.message : 'Token verification failed';
+		res.writeHead(401, { 'Content-Type': 'application/json' });
+		res.end(JSON.stringify({ statusCode: 401, message }));
+	}
+}
 
 /**
  * Create a proxy middleware that forwards requests to the order service.
@@ -51,6 +101,13 @@ async function bootstrap() {
 			credentials: true,
 		}),
 	);
+
+	// Register Clerk auth middleware BEFORE proxy routes so unauthenticated
+	// requests are rejected at the gateway without reaching the order-service.
+	// On success, x-user-id / x-user-account-id headers are injected so the
+	// downstream service can trust the identity without calling Clerk again.
+	expressApp.use('/api/seats', clerkAuthMiddleware);
+	expressApp.use('/api/orders', clerkAuthMiddleware);
 
 	// Register proxy middleware on the raw Express app.
 	// NO path prefix in app.use() — the full URL is preserved so pathRewrite works.

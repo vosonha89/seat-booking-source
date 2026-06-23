@@ -7,10 +7,18 @@ import {
 	Inject,
 	Get,
 	Param,
+	Req,
 } from '@nestjs/common';
 import { IOrderService } from './interfaces/order-service.interface';
 import { IOrderServiceSymbol } from './tokens';
 import { ICreateOrderDto, IOrder, IPayment } from '@seat-booking/shared-types';
+/**
+ * Minimal request interface used to read forwarded auth headers.
+ * Avoids coupling to Node.js IncomingMessage for testability.
+ */
+interface IncomingRequest {
+	headers: Record<string, string | string[] | undefined>;
+}
 
 /**
  * Controller for order-related endpoints.
@@ -24,17 +32,25 @@ export class OrderController {
 
 	/**
 	 * Creates a new order and reserves the seat.
-	 * @param request - Request body containing seatId, userId, and accountId.
+	 * Reads the authenticated userId and accountId from headers injected by
+	 * the api-gateway's Clerk auth middleware (x-user-id, x-user-account-id).
+	 * @param request - Request body containing seatId.
+	 * @param req - Request object with forwarded auth headers.
 	 * @returns Promise that resolves to the created IOrder object.
 	 */
 	@Post()
 	@HttpCode(HttpStatus.CREATED)
 	public async createOrder(
 		@Body() request: ICreateOrderDto,
+		@Req() req: IncomingRequest,
 	): Promise<IOrder> {
-		const { seatId, accountId } = request;
-		// TODO: Get userId from auth context (Clerk)
-		const userId = '1'; // Temporary placeholder
+		const { seatId } = request;
+		// userId and accountId are injected by the api-gateway Clerk middleware.
+		// Fallback to 'anonymous' only for backwards-compatibility in local dev
+		// when running order-service directly without the gateway.
+		const userId = (req.headers['x-user-id'] as string) ?? 'anonymous';
+		const accountId =
+			(req.headers['x-user-account-id'] as string) ?? userId;
 		return this.orderService.createOrder(seatId, userId, accountId);
 	}
 

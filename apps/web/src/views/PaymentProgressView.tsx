@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@clerk/react';
 import { Stepper, StepperStep } from '../components/Stepper';
 import { apiService } from '../services/api.service';
 import { OrderStatus } from '@seat-booking/shared-types';
@@ -87,6 +88,7 @@ export function PaymentProgressView() {
 	const abortRef = useRef<boolean>(false);
 	const navigate = useNavigate();
 	const location = useLocation();
+	const { getToken } = useAuth();
 
 	const state = location.state as PaymentLocationState | null;
 	const orderId = state?.orderId;
@@ -123,7 +125,8 @@ export function PaymentProgressView() {
 		if (!orderId || abortRef.current) return;
 
 		try {
-			const result = await apiService.orders.getWithPayment(orderId);
+			const token = await getToken();
+			const result = await apiService.orders.getWithPayment(orderId, token || undefined);
 			if (abortRef.current) return;
 
 			const orderStatus = result.order.status;
@@ -158,7 +161,7 @@ export function PaymentProgressView() {
 			if (abortRef.current) return;
 			console.error('[PaymentProgress] Poll failed, will retry...');
 		}
-	}, [orderId, deriveStepStatus]);
+	}, [orderId, deriveStepStatus, getToken]);
 
 	/** Start polling */
 	const startPolling = useCallback(() => {

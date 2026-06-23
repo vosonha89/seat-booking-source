@@ -33,11 +33,11 @@ export interface IOrder {
 
 /**
  * Data transfer object for creating a new order.
+ * userId and accountId are injected by the api-gateway's Clerk auth middleware
+ * via x-user-id and x-user-account-id headers, not sent by the client.
  */
 export interface ICreateOrderDto {
 	/** ID of the seat to order. */
 	seatId: string;
-	/** ID of the account placing the order. */
-	accountId: string;
 }
 
