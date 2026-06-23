@@ -126,7 +126,7 @@ npm run build
 
 - **Double booking prevention:** SERIALIZABLE isolation + SELECT FOR UPDATE
 - **Ordered payment processing:** SQS FIFO partitioned by accountId
-- **Idempotency:** webhook_logs table + SQS deduplication
+- **Idempotency:** idempotency key on orders & payments + webhook_logs table + SQS deduplication
 - **Audit trail:** MongoDB with TTL indexes (5yr orders, 7yr payments)
 - **Auth:** Clerk with 90-day session expiry
 
@@ -137,6 +137,48 @@ npm run build
 3. Payment service consumes message → calls mock gateway
 4. Mock gateway fires webhook after 1s delay
 5. Webhook handler checks idempotency → updates order + seat atomically
+
+## Idempotency Key in Order Flow
+
+An **idempotency key** is a unique string that tags an order and its associated payment record to guarantee that the same request cannot produce duplicate data. It plays several roles across the order lifecycle:
+
+### 1. Generation
+
+When `POST /orders` is handled, `OrderService.createOrder()` generates a single idempotency key:
+
+```typescript
+const idempotencyKey = `order-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+```
+
+The same key is assigned to **both** the `order` row and the `payment` row inside the same `SERIALIZABLE` transaction.
+
+### 2. Database-level deduplication
+
+The `orders` and `payments` tables both declare:
+
+```sql
+idempotency_key VARCHAR(255) UNIQUE NOT NULL
+```
+
+This unique constraint means that if a retry or duplicate request somehow bypasses application-level checks, the database will reject the insert with a unique-violation error, preventing silent duplication.
+
+### 3. End-to-end traceability
+
+The idempotency key is stored on the `IOrder` and `IPayment` entities and returned to the caller, allowing:
+
+- The **frontend** to correlate an order with its payment.
+- **Logs and audit trails** to reference the same key across services.
+- The **payment service** to look up a payment by its idempotency key if needed (`PaymentRepository.findByIdempotencyKey()`).
+
+### 4. Distinct from other deduplication mechanisms
+
+| Mechanism | Scope | What it prevents |
+|---|---|---|
+| **`idempotency_key`** on order & payment rows | PostgreSQL `UNIQUE` constraint | Duplicate order or payment records from retries within the same flow |
+| **`webhook_logs.webhook_id`** | PostgreSQL `PRIMARY KEY` | The same webhook payload being processed more than once |
+| **SQS `MessageDeduplicationId`** | SQS FIFO queue (5-min window) | The same payment message being consumed more than once from the queue |
+
+Together, these three layers ensure that every stage of the order-to-payment pipeline is resilient to retries and duplicates.
 
 ## Infrastructure Ports
 
