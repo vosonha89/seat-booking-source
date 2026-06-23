@@ -50,7 +50,9 @@ describe('OrderController', () => {
 				idempotencyKey: 'test-idempotency-key',
 			};
 
-			(mockOrderService.createOrder as jest.Mock).mockResolvedValue(orderData);
+			(mockOrderService.createOrder as jest.Mock).mockResolvedValue(
+				orderData,
+			);
 
 			const result = await controller.createOrder({ seatId, accountId });
 
@@ -70,7 +72,9 @@ describe('OrderController', () => {
 				new ConflictException('Seat is already reserved'),
 			);
 
-			await expect(controller.createOrder({ seatId, accountId })).rejects.toThrow(ConflictException);
+			await expect(
+				controller.createOrder({ seatId, accountId }),
+			).rejects.toThrow(ConflictException);
 		});
 	});
 
@@ -88,7 +92,9 @@ describe('OrderController', () => {
 				idempotencyKey: 'test-idempotency-key',
 			};
 
-			(mockOrderService.findById as jest.Mock).mockResolvedValue(orderData);
+			(mockOrderService.findById as jest.Mock).mockResolvedValue(
+				orderData,
+			);
 
 			const result = await controller.getOrder(orderId);
 

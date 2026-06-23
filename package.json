@@ -13,7 +13,8 @@
 		"format:fix": "npm run format -ws --if-present -- --write",
 		"test": "npm run test -ws --if-present",
 		"build": "npm run build -ws --if-present",
-		"setup:sentry": "node setup-sentry.js"
+		"setup:sentry": "node setup-sentry.js",
+		"setup:queue": "node create-sqs-queue.js"
 	},
 	"devDependencies": {
 		"autoprefixer": "^10.5.0",

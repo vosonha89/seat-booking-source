@@ -4,10 +4,16 @@ import { Order } from '@seat-booking/database';
 import { Seat } from '@seat-booking/database';
 import { WebhookLog } from '@seat-booking/database';
 import { AuditPayment } from '@seat-booking/database';
+import { Payment } from '@seat-booking/database';
 import { OrderController } from './order.controller';
 import { OrderService } from './order.service';
 import { OrderRepository } from './order.repository';
-import { IOrderServiceSymbol, IOrderRepositorySymbol } from './tokens';
+import { PaymentRepository } from './payment.repository';
+import {
+	IOrderServiceSymbol,
+	IOrderRepositorySymbol,
+	IPaymentRepositorySymbol,
+} from './tokens';
 import { SeatModule } from '../seat/seat.module';
 import { SqsProducerService } from './sqs-producer.service';
 import { WebhookController } from './webhook.controller';
@@ -18,9 +24,12 @@ import { WebhookService } from './webhook.service';
  */
 @Module({
 	imports: [
-		TypeOrmModule.forFeature([Order, Seat, WebhookLog], 'postgres'),
+		TypeOrmModule.forFeature(
+			[Order, Seat, WebhookLog, Payment],
+			'postgres',
+		),
 		TypeOrmModule.forFeature([AuditPayment], 'mongodb'),
-		SeatModule
+		SeatModule,
 	],
 	controllers: [OrderController, WebhookController],
 	providers: [
@@ -32,12 +41,17 @@ import { WebhookService } from './webhook.service';
 			provide: IOrderRepositorySymbol,
 			useClass: OrderRepository,
 		},
+		{
+			provide: IPaymentRepositorySymbol,
+			useClass: PaymentRepository,
+		},
 		SqsProducerService,
 		WebhookService,
 	],
 	exports: [
 		IOrderServiceSymbol,
 		IOrderRepositorySymbol,
+		IPaymentRepositorySymbol,
 	],
 })
 export class OrderModule {}

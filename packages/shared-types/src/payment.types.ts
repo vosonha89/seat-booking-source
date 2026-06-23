@@ -8,6 +8,30 @@ export enum PaymentStatus {
 }
 
 /**
+ * Represents a payment entity.
+ */
+export interface IPayment {
+	/** Unique identifier for the payment. */
+	id: string;
+	/** ID of the order associated with this payment. */
+	orderId: string;
+	/** Status of the payment. */
+	status: PaymentStatus;
+	/** Payment amount in cents. */
+	amount: number;
+	/** Transaction ID from the payment gateway. */
+	transactionId?: string;
+	/** Response data from the payment gateway. */
+	gatewayResponse?: any;
+	/** Idempotency key to prevent duplicate payment processing. */
+	idempotencyKey: string;
+	/** Timestamp when the payment was created. */
+	createdAt: Date;
+	/** Timestamp when the payment was last updated. */
+	updatedAt: Date;
+}
+
+/**
  * Represents a payment message to be sent to the SQS queue.
  */
 export interface IPaymentMessage {
@@ -32,4 +56,3 @@ export interface IWebhookPayload {
 	/** Status of the payment. */
 	status: PaymentStatus;
 }
-

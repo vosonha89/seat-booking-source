@@ -29,6 +29,19 @@ CREATE TABLE IF NOT EXISTS webhook_logs (
 	processed_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Payments
+CREATE TABLE IF NOT EXISTS payments (
+	id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+	order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+	status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+	amount INTEGER NOT NULL DEFAULT 0,
+	transaction_id VARCHAR(255),
+	gateway_response JSONB,
+	idempotency_key VARCHAR(255) UNIQUE NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Seed 3 fixed seats
 INSERT INTO seats (label, status)
 VALUES

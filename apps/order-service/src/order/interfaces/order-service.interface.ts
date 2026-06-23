@@ -14,7 +14,11 @@ export interface IOrderService {
 	 * @throws ConflictError if the seat is already reserved.
 	 * @throws Error if the seat is not found.
 	 */
-	createOrder(seatId: string, userId: string, accountId: string): Promise<IOrder>;
+	createOrder(
+		seatId: string,
+		userId: string,
+		accountId: string,
+	): Promise<IOrder>;
 
 	/**
 	 * Finds an order by its ID.
@@ -30,5 +34,8 @@ export interface IOrderService {
 	 * @returns Promise that resolves to the updated IOrder object.
 	 * @throws Error if the order is not found.
 	 */
-	updatePaymentStatus(orderId: string, status: 'CONFIRMED' | 'FAILED'): Promise<IOrder>;
+	updatePaymentStatus(
+		orderId: string,
+		status: 'CONFIRMED' | 'FAILED',
+	): Promise<IOrder>;
 }

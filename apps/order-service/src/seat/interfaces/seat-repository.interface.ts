@@ -25,7 +25,10 @@ export interface ISeatRepository {
 	 * @param manager - Optional TypeORM entity manager for transaction support.
 	 * @returns Promise that resolves to the ISeat object or null if not found.
 	 */
-	findByIdForUpdate(id: string, manager?: EntityManager): Promise<ISeat | null>;
+	findByIdForUpdate(
+		id: string,
+		manager?: EntityManager,
+	): Promise<ISeat | null>;
 
 	/**
 	 * Updates the status of a seat.
@@ -35,7 +38,11 @@ export interface ISeatRepository {
 	 * @returns Promise that resolves to the updated ISeat object.
 	 * @throws Error if seat with specified ID is not found.
 	 */
-	updateStatus(id: string, status: SeatStatus, reservedBy?: string): Promise<ISeat>;
+	updateStatus(
+		id: string,
+		status: SeatStatus,
+		reservedBy?: string,
+	): Promise<ISeat>;
 
 	/**
 	 * Updates a seat.

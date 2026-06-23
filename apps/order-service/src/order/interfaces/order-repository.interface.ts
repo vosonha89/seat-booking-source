@@ -12,7 +12,10 @@ export interface IOrderRepository {
 	 * @param manager - Optional TypeORM entity manager for transaction support.
 	 * @returns Promise that resolves to the created IOrder object.
 	 */
-	createOrder(order: Partial<IOrder>, manager?: EntityManager): Promise<IOrder>;
+	createOrder(
+		order: Partial<IOrder>,
+		manager?: EntityManager,
+	): Promise<IOrder>;
 
 	/**
 	 * Finds an order by its ID.
@@ -28,7 +31,10 @@ export interface IOrderRepository {
 	 * @param manager - TypeORM entity manager for transaction support.
 	 * @returns Promise that resolves to the IOrder object or null if not found.
 	 */
-	findByIdForUpdate(id: string, manager: EntityManager): Promise<IOrder | null>;
+	findByIdForUpdate(
+		id: string,
+		manager: EntityManager,
+	): Promise<IOrder | null>;
 
 	/**
 	 * Updates the status of an order.
@@ -38,7 +44,11 @@ export interface IOrderRepository {
 	 * @returns Promise that resolves to the updated IOrder object.
 	 * @throws Error if order with specified ID is not found.
 	 */
-	updateStatus(id: string, status: OrderStatus, manager?: EntityManager): Promise<IOrder>;
+	updateStatus(
+		id: string,
+		status: OrderStatus,
+		manager?: EntityManager,
+	): Promise<IOrder>;
 
 	/**
 	 * Updates an order.

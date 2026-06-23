@@ -26,15 +26,19 @@ export class AppController {
 	 * @param body The payment request body
 	 * @returns A success response
 	 */
-	@Post('/pay')
-	async processPayment(@Body() body: { orderId: string; amount: number; callbackUrl: string }): Promise<{ message: string; orderId: string }> {
+	@Post("/pay")
+	async processPayment(
+		@Body() body: { orderId: string; amount: number; callbackUrl: string },
+	): Promise<{ message: string; orderId: string }> {
 		// Process payment asynchronously to avoid blocking the response
-		this.appService.processPayment(body.orderId, body.amount, body.callbackUrl).catch(error => {
-			console.error('Payment processing failed:', error);
-		});
+		this.appService
+			.processPayment(body.orderId, body.amount, body.callbackUrl)
+			.catch((error) => {
+				console.error("Payment processing failed:", error);
+			});
 
 		return {
-			message: 'Payment processing initiated',
+			message: "Payment processing initiated",
 			orderId: body.orderId,
 		};
 	}

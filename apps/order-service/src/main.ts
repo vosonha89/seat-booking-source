@@ -11,10 +11,10 @@ dotenv.config({ path: path.resolve(__dirname, '..', '.env') });
  * Creates the app instance and starts listening on the configured port.
  */
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+	const app = await NestFactory.create(AppModule);
 
-  const port = process.env.PORT || 3002;
-  await app.listen(port);
-  console.log(`Order service running on port ${port}`);
+	const port = process.env.PORT || 3002;
+	await app.listen(port);
+	console.log(`Order service running on port ${port}`);
 }
 bootstrap();

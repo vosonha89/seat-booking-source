@@ -24,6 +24,7 @@
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@seat-booking/base-logging": "^1.0.0",
+    "@seat-booking/shared-types": "*",
     "@sentry/integrations": "^7.120.4",
     "@sentry/node": "^7.120.4",
     "axios": "^1.18.0",

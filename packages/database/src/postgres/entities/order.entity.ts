@@ -8,6 +8,7 @@ import { OrderStatus } from '@seat-booking/shared-types';
  */
 @Entity({ name: 'orders' })
 export class Order extends BaseEntity {
+
 	/** ID of the user who created the order. */
 	@Column({ name: 'user_id', length: 255 })
 	public userId!: string;

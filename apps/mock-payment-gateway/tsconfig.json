@@ -10,6 +10,7 @@
     "target": "ES2021",
     "sourceMap": true,
     "outDir": "./dist",
+    "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": false,
@@ -18,10 +19,10 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@seat-booking/base-logging": ["../base-logging/src/index.ts"],
-      "@seat-booking/shared-types": ["../../packages/shared-types/src/index.ts"],
-      "@seat-booking/shared-errors": ["../../packages/shared-errors/src/index.ts"],
-      "@seat-booking/database": ["../../packages/database/src/index.ts"]
+      "@seat-booking/base-logging": ["../base-logging/dist/index.js"],
+      "@seat-booking/shared-types": ["../../packages/shared-types/dist/index.js"],
+      "@seat-booking/shared-errors": ["../../packages/shared-errors/dist/index.js"],
+      "@seat-booking/database": ["../../packages/database/dist/index.js"]
     }
   }
 }

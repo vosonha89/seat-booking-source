@@ -15,7 +15,9 @@ describe('OrderRepository', () => {
 			findOneBy: jest.fn(),
 		};
 
-		repository = new OrderRepository(mockOrderRepository as unknown as Repository<Order>);
+		repository = new OrderRepository(
+			mockOrderRepository as unknown as Repository<Order>,
+		);
 	});
 
 	describe('repository instantiation', () => {
@@ -40,8 +42,12 @@ describe('OrderRepository', () => {
 				updatedAt: new Date(),
 			};
 
-			(mockOrderRepository.create as jest.Mock).mockReturnValue(orderData);
-			(mockOrderRepository.save as jest.Mock).mockResolvedValue(savedOrder);
+			(mockOrderRepository.create as jest.Mock).mockReturnValue(
+				orderData,
+			);
+			(mockOrderRepository.save as jest.Mock).mockResolvedValue(
+				savedOrder,
+			);
 
 			const result = await repository.createOrder(orderData);
 
@@ -65,23 +71,31 @@ describe('OrderRepository', () => {
 				updatedAt: new Date(),
 			};
 
-			(mockOrderRepository.findOneBy as jest.Mock).mockResolvedValue(order);
+			(mockOrderRepository.findOneBy as jest.Mock).mockResolvedValue(
+				order,
+			);
 
 			const result = await repository.findById(orderId);
 
 			expect(result).toEqual(order);
-			expect(mockOrderRepository.findOneBy).toHaveBeenCalledWith({ id: orderId });
+			expect(mockOrderRepository.findOneBy).toHaveBeenCalledWith({
+				id: orderId,
+			});
 		});
 
 		it('should return null if order is not found', async () => {
 			const orderId = 'order-999';
 
-			(mockOrderRepository.findOneBy as jest.Mock).mockResolvedValue(null);
+			(mockOrderRepository.findOneBy as jest.Mock).mockResolvedValue(
+				null,
+			);
 
 			const result = await repository.findById(orderId);
 
 			expect(result).toBeNull();
-			expect(mockOrderRepository.findOneBy).toHaveBeenCalledWith({ id: orderId });
+			expect(mockOrderRepository.findOneBy).toHaveBeenCalledWith({
+				id: orderId,
+			});
 		});
 	});
 });

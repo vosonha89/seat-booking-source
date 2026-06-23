@@ -1,9 +1,10 @@
-import { Controller, Get, Req, Res } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { AppService } from './app.service';
-import { createProxyMiddleware } from 'http-proxy-middleware';
 
 /**
  * Root controller handling health-check and welcome endpoints.
+ * Proxy routes for seats/orders are registered in main.ts via Express middleware
+ * to ensure the raw request stream is forwarded before body parsing.
  */
 @Controller()
 export class AppController {
@@ -20,35 +21,5 @@ export class AppController {
 	@Get()
 	getHello(): string {
 		return this.appService.getHello();
-	}
-
-	/**
-	 * Proxy route to order service for seat endpoints.
-	 * @param req - Request object
-	 * @param res - Response object
-	 */
-	@Get('api/seats')
-	getSeats(@Req() req: any, @Res() res: any) {
-		const proxy = createProxyMiddleware({
-			target: 'http://localhost:3002',
-			changeOrigin: true,
-			pathRewrite: { '^/api/seats': '/seats' },
-		});
-		return proxy(req, res);
-	}
-
-	/**
-	 * Proxy route to order service for individual seat endpoints.
-	 * @param req - Request object
-	 * @param res - Response object
-	 */
-	@Get('api/seats/:id')
-	getSeatById(@Req() req: any, @Res() res: any) {
-		const proxy = createProxyMiddleware({
-			target: 'http://localhost:3002',
-			changeOrigin: true,
-			pathRewrite: { '^/api/seats': '/seats' },
-		});
-		return proxy(req, res);
 	}
 }

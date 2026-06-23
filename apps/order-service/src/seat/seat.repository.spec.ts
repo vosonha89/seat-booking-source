@@ -56,12 +56,18 @@ describe('SeatRepository', () => {
 
 			// Assert
 			expect(result).toBeNull();
-			expect(typeOrmRepository.findOneBy).toHaveBeenCalledWith({ id: 'non-existent-id' });
+			expect(typeOrmRepository.findOneBy).toHaveBeenCalledWith({
+				id: 'non-existent-id',
+			});
 		});
 
 		it('should return seat when found', async () => {
 			// Arrange
-			const mockSeat = { id: '1', label: 'A1', status: SeatStatusEnum.AVAILABLE };
+			const mockSeat = {
+				id: '1',
+				label: 'A1',
+				status: SeatStatusEnum.AVAILABLE,
+			};
 			typeOrmRepository.findOneBy.mockResolvedValue(mockSeat);
 
 			// Act
@@ -69,7 +75,9 @@ describe('SeatRepository', () => {
 
 			// Assert
 			expect(result).toEqual(mockSeat);
-			expect(typeOrmRepository.findOneBy).toHaveBeenCalledWith({ id: '1' });
+			expect(typeOrmRepository.findOneBy).toHaveBeenCalledWith({
+				id: '1',
+			});
 		});
 	});
 
@@ -80,24 +88,43 @@ describe('SeatRepository', () => {
 
 			// Act & Assert
 			await expect(
-				repository.updateStatus('non-existent-id', SeatStatusEnum.BOOKED),
+				repository.updateStatus(
+					'non-existent-id',
+					SeatStatusEnum.BOOKED,
+				),
 			).rejects.toThrow('Seat with ID non-existent-id not found');
-			expect(typeOrmRepository.findOneBy).toHaveBeenCalledWith({ id: 'non-existent-id' });
+			expect(typeOrmRepository.findOneBy).toHaveBeenCalledWith({
+				id: 'non-existent-id',
+			});
 		});
 
 		it('should update seat status', async () => {
 			// Arrange
-			const mockSeat = { id: '1', label: 'A1', status: SeatStatusEnum.AVAILABLE };
+			const mockSeat = {
+				id: '1',
+				label: 'A1',
+				status: SeatStatusEnum.AVAILABLE,
+			};
 			typeOrmRepository.findOneBy.mockResolvedValue(mockSeat);
-			typeOrmRepository.save.mockResolvedValue({ ...mockSeat, status: SeatStatusEnum.BOOKED, reservedBy: 'user-123' });
+			typeOrmRepository.save.mockResolvedValue({
+				...mockSeat,
+				status: SeatStatusEnum.BOOKED,
+				reservedBy: 'user-123',
+			});
 
 			// Act
-			const updatedSeat = await repository.updateStatus('1', SeatStatusEnum.BOOKED, 'user-123');
+			const updatedSeat = await repository.updateStatus(
+				'1',
+				SeatStatusEnum.BOOKED,
+				'user-123',
+			);
 
 			// Assert
 			expect(updatedSeat.status).toBe(SeatStatusEnum.BOOKED);
 			expect(updatedSeat.reservedBy).toBe('user-123');
-			expect(typeOrmRepository.findOneBy).toHaveBeenCalledWith({ id: '1' });
+			expect(typeOrmRepository.findOneBy).toHaveBeenCalledWith({
+				id: '1',
+			});
 			expect(typeOrmRepository.save).toHaveBeenCalled();
 		});
 	});

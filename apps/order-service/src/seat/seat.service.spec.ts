@@ -68,12 +68,18 @@ describe('SeatService', () => {
 
 			// Assert
 			expect(nonExistentSeat).toBeNull();
-			expect(mockRepository.findById).toHaveBeenCalledWith('non-existent-id');
+			expect(mockRepository.findById).toHaveBeenCalledWith(
+				'non-existent-id',
+			);
 		});
 
 		it('should find existing seat by id', async () => {
 			// Arrange
-			const mockSeat = { id: '1', label: 'A1', status: SeatStatusEnum.AVAILABLE };
+			const mockSeat = {
+				id: '1',
+				label: 'A1',
+				status: SeatStatusEnum.AVAILABLE,
+			};
 			mockRepository.findById.mockResolvedValue(mockSeat);
 
 			// Act
@@ -88,38 +94,64 @@ describe('SeatService', () => {
 	describe('updateStatus', () => {
 		it('should update seat status', async () => {
 			// Arrange
-			const updatedSeat = { id: '1', label: 'A1', status: SeatStatusEnum.RESERVED };
+			const updatedSeat = {
+				id: '1',
+				label: 'A1',
+				status: SeatStatusEnum.RESERVED,
+			};
 			mockRepository.updateStatus.mockResolvedValue(updatedSeat);
 
 			// Act
-			const result = await service.updateStatus('1', SeatStatusEnum.RESERVED, 'user-123');
+			const result = await service.updateStatus(
+				'1',
+				SeatStatusEnum.RESERVED,
+				'user-123',
+			);
 
 			// Assert
 			expect(result).toEqual(updatedSeat);
-			expect(mockRepository.updateStatus).toHaveBeenCalledWith('1', SeatStatusEnum.RESERVED, 'user-123');
+			expect(mockRepository.updateStatus).toHaveBeenCalledWith(
+				'1',
+				SeatStatusEnum.RESERVED,
+				'user-123',
+			);
 		});
 
 		it('should throw error when updating non-existent seat', async () => {
 			// Arrange
-			mockRepository.updateStatus.mockRejectedValue(new Error('Seat not found'));
+			mockRepository.updateStatus.mockRejectedValue(
+				new Error('Seat not found'),
+			);
 
 			// Act & Assert
 			await expect(
 				service.updateStatus('non-existent-id', SeatStatusEnum.BOOKED),
 			).rejects.toThrow();
-			expect(mockRepository.updateStatus).toHaveBeenCalledWith('non-existent-id', SeatStatusEnum.BOOKED, undefined);
+			expect(mockRepository.updateStatus).toHaveBeenCalledWith(
+				'non-existent-id',
+				SeatStatusEnum.BOOKED,
+				undefined,
+			);
 		});
 
 		it('should update seat status with valid enum value', async () => {
 			// Arrange
-			const updatedSeat = { id: '1', label: 'A1', status: SeatStatusEnum.BOOKED };
+			const updatedSeat = {
+				id: '1',
+				label: 'A1',
+				status: SeatStatusEnum.BOOKED,
+			};
 			mockRepository.updateStatus.mockResolvedValue(updatedSeat);
 
 			// Act
 			await service.updateStatus('1', SeatStatusEnum.BOOKED, 'user-123');
 
 			// Assert
-			expect(mockRepository.updateStatus).toHaveBeenCalledWith('1', SeatStatusEnum.BOOKED, 'user-123');
+			expect(mockRepository.updateStatus).toHaveBeenCalledWith(
+				'1',
+				SeatStatusEnum.BOOKED,
+				'user-123',
+			);
 		});
 	});
 });

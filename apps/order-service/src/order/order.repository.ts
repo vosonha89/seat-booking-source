@@ -25,7 +25,9 @@ export class OrderRepository implements IOrderRepository {
 		order: Partial<IOrder>,
 		manager?: EntityManager,
 	): Promise<IOrder> {
-		const repository = manager ? manager.getRepository(Order) : this.orderRepository;
+		const repository = manager
+			? manager.getRepository(Order)
+			: this.orderRepository;
 		const newOrder = repository.create(order);
 		const savedOrder = await repository.save(newOrder);
 		return this.mapEntityToDto(savedOrder);
@@ -37,8 +39,13 @@ export class OrderRepository implements IOrderRepository {
 	 * @param manager - Optional TypeORM entity manager for transaction support.
 	 * @returns Promise that resolves to the IOrder object or null if not found.
 	 */
-	public async findById(id: string, manager?: EntityManager): Promise<IOrder | null> {
-		const repository = manager ? manager.getRepository(Order) : this.orderRepository;
+	public async findById(
+		id: string,
+		manager?: EntityManager,
+	): Promise<IOrder | null> {
+		const repository = manager
+			? manager.getRepository(Order)
+			: this.orderRepository;
 		const order = await repository.findOneBy({ id });
 		if (!order) {
 			return null;
@@ -52,7 +59,10 @@ export class OrderRepository implements IOrderRepository {
 	 * @param manager - TypeORM entity manager for transaction support.
 	 * @returns Promise that resolves to the IOrder object or null if not found.
 	 */
-	public async findByIdForUpdate(id: string, manager: EntityManager): Promise<IOrder | null> {
+	public async findByIdForUpdate(
+		id: string,
+		manager: EntityManager,
+	): Promise<IOrder | null> {
 		const repository = manager.getRepository(Order);
 		const order = await repository.findOne({
 			where: { id },
@@ -77,7 +87,9 @@ export class OrderRepository implements IOrderRepository {
 		status: OrderStatus,
 		manager?: EntityManager,
 	): Promise<IOrder> {
-		const repository = manager ? manager.getRepository(Order) : this.orderRepository;
+		const repository = manager
+			? manager.getRepository(Order)
+			: this.orderRepository;
 		const order = await repository.findOneBy({ id });
 
 		if (!order) {
@@ -101,7 +113,9 @@ export class OrderRepository implements IOrderRepository {
 		order: Partial<IOrder>,
 		manager?: EntityManager,
 	): Promise<IOrder> {
-		const repository = manager ? manager.getRepository(Order) : this.orderRepository;
+		const repository = manager
+			? manager.getRepository(Order)
+			: this.orderRepository;
 		const existingOrder = await repository.findOneBy({ id: order.id });
 
 		if (!existingOrder) {

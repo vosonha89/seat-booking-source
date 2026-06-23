@@ -135,10 +135,14 @@ describe('WebhookService', () => {
 			await service.processWebhook(payload);
 
 			// Assert
-			expect(queryRunner.startTransaction).toHaveBeenCalledWith('SERIALIZABLE');
+			expect(queryRunner.startTransaction).toHaveBeenCalledWith(
+				'SERIALIZABLE',
+			);
 			expect(queryRunner.manager.findOne).toHaveBeenCalledWith(
 				WebhookLog,
-				expect.objectContaining({ where: { webhookId: payload.webhookId } }),
+				expect.objectContaining({
+					where: { webhookId: payload.webhookId },
+				}),
 			);
 			expect(queryRunner.manager.findOne).toHaveBeenCalledWith(
 				Order,
@@ -162,7 +166,10 @@ describe('WebhookService', () => {
 				status: PaymentStatus.SUCCESS,
 			};
 
-			const mockWebhookLog = { webhookId: 'webhook-123', orderId: 'order-456' } as WebhookLog;
+			const mockWebhookLog = {
+				webhookId: 'webhook-123',
+				orderId: 'order-456',
+			} as WebhookLog;
 
 			const queryRunner = {
 				manager: {
@@ -190,10 +197,18 @@ describe('WebhookService', () => {
 			// Assert
 			expect(queryRunner.manager.findOne).toHaveBeenCalledWith(
 				WebhookLog,
-				expect.objectContaining({ where: { webhookId: payload.webhookId } }),
+				expect.objectContaining({
+					where: { webhookId: payload.webhookId },
+				}),
 			);
-			expect(queryRunner.manager.findOne).not.toHaveBeenCalledWith(Order, expect.anything());
-			expect(queryRunner.manager.findOne).not.toHaveBeenCalledWith(Seat, expect.anything());
+			expect(queryRunner.manager.findOne).not.toHaveBeenCalledWith(
+				Order,
+				expect.anything(),
+			);
+			expect(queryRunner.manager.findOne).not.toHaveBeenCalledWith(
+				Seat,
+				expect.anything(),
+			);
 			expect(queryRunner.manager.save).not.toHaveBeenCalled();
 			expect(queryRunner.commitTransaction).toHaveBeenCalled();
 			expect(auditPaymentRepository.create).not.toHaveBeenCalled();

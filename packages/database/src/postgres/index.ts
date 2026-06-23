@@ -2,12 +2,13 @@ import { DataSource } from 'typeorm';
 import { Seat } from './entities/seat.entity';
 import { Order } from './entities/order.entity';
 import { WebhookLog } from './entities/webhook-log.entity';
+import { Payment } from './entities/payment.entity';
 
-export { Seat, Order, WebhookLog };
+export { Seat, Order, WebhookLog, Payment };
 
 /**
  * TypeORM DataSource for PostgreSQL database connection.
- * Configured for the seat booking transactional data (seats, orders, webhook_logs).
+ * Configured for the seat booking transactional data (seats, orders, webhook_logs, payments).
  */
 export const PostgresDataSource = new DataSource({
 	type: 'postgres',
@@ -18,7 +19,12 @@ export const PostgresDataSource = new DataSource({
 	password: process.env['POSTGRES_PASSWORD'] ?? 'postgres',
 	synchronize: true,
 	logging: false,
-	entities: [Seat, Order, WebhookLog],
+	entities: [
+		Seat,
+		Order,
+		WebhookLog,
+		Payment,
+	],
 });
 
 /**

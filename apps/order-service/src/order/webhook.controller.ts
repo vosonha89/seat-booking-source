@@ -1,4 +1,11 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, Logger } from '@nestjs/common';
+import {
+	Controller,
+	Post,
+	Body,
+	HttpCode,
+	HttpStatus,
+	Logger,
+} from '@nestjs/common';
 import { WebhookService } from './webhook.service';
 import { IWebhookPayload } from '@seat-booking/shared-types';
 
@@ -19,9 +26,27 @@ export class WebhookController {
 	 */
 	@Post('payment')
 	@HttpCode(HttpStatus.OK)
-	async handlePaymentWebhook(@Body() payload: IWebhookPayload): Promise<void> {
-		this.logger.log(`Received payment webhook for orderId: ${payload.orderId}`);
-		await this.webhookService.processWebhook(payload);
-		this.logger.log(`Successfully processed payment webhook for orderId: ${payload.orderId}`);
+	async handlePaymentWebhook(
+		@Body() payload: IWebhookPayload,
+	): Promise<void> {
+		this.logger.log('Received payment webhook', {
+			orderId: payload.orderId,
+			status: payload.status,
+		});
+
+		try {
+			this.logger.debug('Processing webhook payload', { payload });
+			await this.webhookService.processWebhook(payload);
+			this.logger.log('Successfully processed payment webhook', {
+				orderId: payload.orderId,
+			});
+		} catch (error) {
+			this.logger.error('Failed to process payment webhook', {
+				orderId: payload.orderId,
+				error: error instanceof Error ? error.message : 'Unknown error',
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+			throw error;
+		}
 	}
 }

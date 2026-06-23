@@ -1,10 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { OrderService } from './order.service';
-import { IOrderServiceSymbol, IOrderRepositorySymbol } from './tokens';
+import {
+	IOrderServiceSymbol,
+	IOrderRepositorySymbol,
+	IPaymentRepositorySymbol,
+} from './tokens';
 import { IOrderRepository } from './interfaces/order-repository.interface';
 import { ISeatRepository } from '../seat/interfaces/seat-repository.interface';
+import { IPaymentRepository } from './interfaces/payment-repository.interface';
 import { ISeatRepositorySymbol } from '../seat/tokens';
-import { OrderStatus, SeatStatusEnum } from '@seat-booking/shared-types';
+import {
+	OrderStatus,
+	SeatStatusEnum,
+	PaymentStatus,
+} from '@seat-booking/shared-types';
 import { DataSource } from 'typeorm';
 import { ConflictException } from '@nestjs/common';
 import { SqsProducerService } from './sqs-producer.service';
@@ -13,6 +22,7 @@ describe('OrderService', () => {
 	let service: OrderService;
 	let mockOrderRepository: jest.Mocked<IOrderRepository>;
 	let mockSeatRepository: jest.Mocked<ISeatRepository>;
+	let mockPaymentRepository: jest.Mocked<IPaymentRepository>;
 	let mockDataSource: Partial<DataSource>;
 	let mockSqsProducerService: Partial<SqsProducerService>;
 
@@ -34,12 +44,23 @@ describe('OrderService', () => {
 			update: jest.fn(),
 		};
 
+		mockPaymentRepository = {
+			createPayment: jest.fn(),
+			findById: jest.fn(),
+			findByOrderId: jest.fn(),
+			findByIdempotencyKey: jest.fn(),
+			updateStatus: jest.fn(),
+			update: jest.fn(),
+		};
+
 		mockDataSource = {
 			transaction: jest.fn(),
 		};
 
 		mockSqsProducerService = {
-			sendPaymentProcessingMessage: jest.fn(),
+			sendPaymentProcessingMessage: jest
+				.fn()
+				.mockResolvedValue(undefined),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -55,6 +76,10 @@ describe('OrderService', () => {
 				{
 					provide: ISeatRepositorySymbol,
 					useValue: mockSeatRepository,
+				},
+				{
+					provide: IPaymentRepositorySymbol,
+					useValue: mockPaymentRepository,
 				},
 				{
 					provide: 'postgresDataSource',
@@ -101,15 +126,30 @@ describe('OrderService', () => {
 				status: SeatStatusEnum.AVAILABLE,
 			});
 			mockOrderRepository.createOrder.mockResolvedValue(createdOrder);
-			(mockDataSource.transaction as jest.Mock).mockImplementation((isolationLevel, callback) =>
-				callback({}),
+			mockPaymentRepository.createPayment.mockResolvedValue({
+				id: 'payment-123',
+				orderId: createdOrder.id,
+				status: PaymentStatus.PENDING,
+				amount: 10000,
+				idempotencyKey: 'test-idempotency-key',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			});
+			(mockDataSource.transaction as jest.Mock).mockImplementation(
+				(isolationLevel, callback) => callback({}),
 			);
 
 			const result = await service.createOrder(seatId, userId, accountId);
 
 			expect(result).toEqual(createdOrder);
-			expect(mockDataSource.transaction).toHaveBeenCalledWith('SERIALIZABLE', expect.any(Function));
-			expect(mockSeatRepository.findByIdForUpdate).toHaveBeenCalledWith(seatId, expect.any(Object));
+			expect(mockDataSource.transaction).toHaveBeenCalledWith(
+				'SERIALIZABLE',
+				expect.any(Function),
+			);
+			expect(mockSeatRepository.findByIdForUpdate).toHaveBeenCalledWith(
+				seatId,
+				expect.any(Object),
+			);
 			expect(mockOrderRepository.createOrder).toHaveBeenCalledWith(
 				expect.objectContaining({
 					userId,
@@ -131,11 +171,13 @@ describe('OrderService', () => {
 				label: 'A1',
 				status: SeatStatusEnum.BOOKED,
 			});
-			(mockDataSource.transaction as jest.Mock).mockImplementation((isolationLevel, callback) =>
-				callback({}),
+			(mockDataSource.transaction as jest.Mock).mockImplementation(
+				(isolationLevel, callback) => callback({}),
 			);
 
-			await expect(service.createOrder(seatId, userId, accountId)).rejects.toThrow(ConflictException);
+			await expect(
+				service.createOrder(seatId, userId, accountId),
+			).rejects.toThrow(ConflictException);
 		});
 
 		it('should throw error when seat is not found', async () => {
@@ -144,11 +186,122 @@ describe('OrderService', () => {
 			const accountId = 'account-789';
 
 			mockSeatRepository.findByIdForUpdate.mockResolvedValue(null);
-			(mockDataSource.transaction as jest.Mock).mockImplementation((isolationLevel, callback) =>
-				callback({}),
+			(mockDataSource.transaction as jest.Mock).mockImplementation(
+				(isolationLevel, callback) => callback({}),
 			);
 
-			await expect(service.createOrder(seatId, userId, accountId)).rejects.toThrow(Error);
+			await expect(
+				service.createOrder(seatId, userId, accountId),
+			).rejects.toThrow(Error);
+		});
+	});
+
+	describe('updatePaymentStatus', () => {
+		it('should update payment status and order status', async () => {
+			const orderId = 'order-123';
+			const orderData = {
+				id: orderId,
+				userId: 'user-456',
+				seatId: 'seat-123',
+				accountId: 'account-789',
+				status: OrderStatus.PENDING,
+				idempotencyKey: 'test-idempotency-key',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			mockOrderRepository.findByIdForUpdate.mockResolvedValue(orderData);
+			mockPaymentRepository.findByOrderId.mockResolvedValue({
+				id: 'payment-123',
+				orderId,
+				status: PaymentStatus.PENDING,
+				amount: 10000,
+				idempotencyKey: 'test-idempotency-key',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			});
+			mockOrderRepository.update.mockResolvedValue({
+				...orderData,
+				status: OrderStatus.CONFIRMED,
+			});
+			(mockDataSource.transaction as jest.Mock).mockImplementation(
+				(callback) => callback({}),
+			);
+
+			const result = await service.updatePaymentStatus(
+				orderId,
+				'CONFIRMED',
+			);
+
+			expect(result).toEqual({
+				...orderData,
+				status: OrderStatus.CONFIRMED,
+			});
+			expect(mockOrderRepository.findByIdForUpdate).toHaveBeenCalledWith(
+				orderId,
+				expect.any(Object),
+			);
+			expect(mockPaymentRepository.findByOrderId).toHaveBeenCalledWith(
+				orderId,
+				expect.any(Object),
+			);
+			expect(mockPaymentRepository.updateStatus).toHaveBeenCalledWith(
+				'payment-123',
+				PaymentStatus.SUCCESS,
+				expect.any(Object),
+			);
+			expect(mockOrderRepository.update).toHaveBeenCalledWith(
+				expect.objectContaining({ status: OrderStatus.CONFIRMED }),
+				expect.any(Object),
+			);
+		});
+
+		it('should update payment status to failed and release seat', async () => {
+			const orderId = 'order-123';
+			const orderData = {
+				id: orderId,
+				userId: 'user-456',
+				seatId: 'seat-123',
+				accountId: 'account-789',
+				status: OrderStatus.PENDING,
+				idempotencyKey: 'test-idempotency-key',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			};
+
+			mockOrderRepository.findByIdForUpdate.mockResolvedValue(orderData);
+			mockPaymentRepository.findByOrderId.mockResolvedValue({
+				id: 'payment-123',
+				orderId,
+				status: PaymentStatus.PENDING,
+				amount: 10000,
+				idempotencyKey: 'test-idempotency-key',
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			});
+			mockOrderRepository.update.mockResolvedValue({
+				...orderData,
+				status: OrderStatus.FAILED,
+			});
+			mockSeatRepository.findByIdForUpdate.mockResolvedValue({
+				id: 'seat-123',
+				label: 'A1',
+				status: SeatStatusEnum.RESERVED,
+			});
+			(mockDataSource.transaction as jest.Mock).mockImplementation(
+				(callback) => callback({}),
+			);
+
+			const result = await service.updatePaymentStatus(orderId, 'FAILED');
+
+			expect(result).toEqual({
+				...orderData,
+				status: OrderStatus.FAILED,
+			});
+			expect(mockSeatRepository.update).toHaveBeenCalledWith(
+				expect.objectContaining({ status: SeatStatusEnum.AVAILABLE }),
+				expect.any(Object),
+			);
 		});
 	});
 

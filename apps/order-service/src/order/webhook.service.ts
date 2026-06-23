@@ -41,7 +41,11 @@ export class WebhookService {
 	 * @throws ConflictException if webhook has already been processed
 	 */
 	async processWebhook(payload: IWebhookPayload): Promise<void> {
-		this.logger.log(`Processing webhook for orderId: ${payload.orderId}, webhookId: ${payload.webhookId}`);
+		this.logger.log('Processing webhook', {
+			orderId: payload.orderId,
+			webhookId: payload.webhookId,
+			status: payload.status,
+		});
 
 		// Get order and seat in a single transaction with SERIALIZABLE isolation
 		const queryRunner = this.dataSource.createQueryRunner();
@@ -50,58 +54,105 @@ export class WebhookService {
 
 		try {
 			// Check idempotency - get webhook log with FOR UPDATE to lock the row
-			const existingWebhookLog = await queryRunner.manager.findOne(WebhookLog, {
-				where: { webhookId: payload.webhookId },
-				lock: { mode: 'pessimistic_write' },
+			this.logger.debug('Checking webhook idempotency', {
+				webhookId: payload.webhookId,
 			});
+			const existingWebhookLog = await queryRunner.manager.findOne(
+				WebhookLog,
+				{
+					where: { webhookId: payload.webhookId },
+					lock: { mode: 'pessimistic_write' },
+				},
+			);
 
 			if (existingWebhookLog) {
-				this.logger.log(`Webhook already processed for orderId: ${payload.orderId}, webhookId: ${payload.webhookId}`);
+				this.logger.warn('Webhook already processed', {
+					orderId: payload.orderId,
+					webhookId: payload.webhookId,
+				});
 				await queryRunner.commitTransaction();
 				return;
 			}
 
 			// Get order
-			const order = await queryRunner.manager.findOne(Order, {
+			this.logger.debug('Finding order', {
+				orderId: payload.orderId,
+			});
+			const order = (await queryRunner.manager.findOne(Order, {
 				where: { id: payload.orderId },
 				lock: { mode: 'pessimistic_write' },
-			}) as Order;
+			})) as Order;
 
 			if (!order) {
-				this.logger.error(`Order not found for orderId: ${payload.orderId}`);
+				this.logger.error('Order not found', {
+					orderId: payload.orderId,
+				});
 				await queryRunner.commitTransaction();
 				return;
 			}
 
 			// Validate state transition
+			this.logger.debug('Validating state transition', {
+				orderId: payload.orderId,
+				currentStatus: order.status,
+				targetStatus: payload.status,
+			});
 			this.validateStateTransition(order.status, payload.status);
 
 			// Get seat
-			const seat = await queryRunner.manager.findOne(Seat, {
+			this.logger.debug('Finding seat', {
+				orderId: payload.orderId,
+				seatId: order.seatId,
+			});
+			const seat = (await queryRunner.manager.findOne(Seat, {
 				where: { id: order.seatId },
 				lock: { mode: 'pessimistic_write' },
-			}) as Seat;
+			})) as Seat;
 
 			if (!seat) {
-				this.logger.error(`Seat not found for seatId: ${order.seatId}`);
+				this.logger.error('Seat not found', {
+					orderId: payload.orderId,
+					seatId: order.seatId,
+				});
 				await queryRunner.commitTransaction();
 				return;
 			}
 
 			// Update order status
 			const oldOrderStatus = order.status;
-			order.status = this.mapPaymentStatusToOrderStatus(payload.status);
+			const newOrderStatus = this.mapPaymentStatusToOrderStatus(
+				payload.status,
+			);
+			order.status = newOrderStatus;
 			order.updatedAt = new Date();
+			this.logger.debug('Updated order status', {
+				orderId: payload.orderId,
+				oldStatus: oldOrderStatus,
+				newStatus: newOrderStatus,
+			});
 
 			// Update seat status
 			const oldSeatStatus = seat.status;
+			let newSeatStatus = oldSeatStatus;
 			if (payload.status === PaymentStatus.SUCCESS) {
 				seat.status = 'BOOKED';
+				newSeatStatus = 'BOOKED';
 			} else if (payload.status === PaymentStatus.FAILED) {
 				seat.status = 'AVAILABLE';
+				newSeatStatus = 'AVAILABLE';
 			}
+			this.logger.debug('Updated seat status', {
+				orderId: payload.orderId,
+				seatId: order.seatId,
+				oldStatus: oldSeatStatus,
+				newStatus: newSeatStatus,
+			});
 
 			// Create webhook log
+			this.logger.debug('Creating webhook log', {
+				webhookId: payload.webhookId,
+				orderId: payload.orderId,
+			});
 			const webhookLog = queryRunner.manager.create(WebhookLog, {
 				webhookId: payload.webhookId,
 				orderId: payload.orderId,
@@ -114,13 +165,27 @@ export class WebhookService {
 			await queryRunner.manager.save(webhookLog);
 
 			await queryRunner.commitTransaction();
-			this.logger.log(`Successfully processed webhook for orderId: ${payload.orderId}`);
+			this.logger.log('Successfully processed webhook', {
+				orderId: payload.orderId,
+			});
 
 			// Create audit log (outside transaction to ensure it's recorded even if transaction fails)
-			await this.createAuditLog(order, oldOrderStatus, oldSeatStatus, payload);
+			this.logger.debug('Creating audit log', {
+				orderId: payload.orderId,
+			});
+			await this.createAuditLog(
+				order,
+				oldOrderStatus,
+				oldSeatStatus,
+				payload,
+			);
 		} catch (error) {
 			await queryRunner.rollbackTransaction();
-			this.logger.error(`Failed to process webhook for orderId: ${payload.orderId}`, (error as Error).stack);
+			this.logger.error('Failed to process webhook', {
+				orderId: payload.orderId,
+				error: error instanceof Error ? error.message : 'Unknown error',
+				stack: error instanceof Error ? error.stack : undefined,
+			});
 			throw error;
 		} finally {
 			await queryRunner.release();
@@ -133,19 +198,29 @@ export class WebhookService {
 	 * @param paymentStatus Payment status from webhook
 	 * @throws ConflictException if transition is invalid
 	 */
-	private validateStateTransition(currentStatus: OrderStatus, paymentStatus: PaymentStatus): void {
+	private validateStateTransition(
+		currentStatus: OrderStatus,
+		paymentStatus: PaymentStatus,
+	): void {
 		const validTransitions = {
 			[OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.FAILED],
-			[OrderStatus.PROCESSING]: [OrderStatus.CONFIRMED, OrderStatus.FAILED],
+			[OrderStatus.PROCESSING]: [
+				OrderStatus.CONFIRMED,
+				OrderStatus.FAILED,
+			],
 		};
 
 		const targetStatus = this.mapPaymentStatusToOrderStatus(paymentStatus);
 
 		if (!validTransitions[currentStatus]?.includes(targetStatus)) {
-			this.logger.error(
-				`Invalid state transition: ${currentStatus} → ${targetStatus} for payment status: ${paymentStatus}`,
+			this.logger.error('Invalid state transition', {
+				currentStatus,
+				targetStatus,
+				paymentStatus,
+			});
+			throw new ConflictException(
+				`Invalid state transition from ${currentStatus} to ${targetStatus}`,
 			);
-			throw new ConflictException(`Invalid state transition from ${currentStatus} to ${targetStatus}`);
 		}
 	}
 
@@ -154,7 +229,9 @@ export class WebhookService {
 	 * @param paymentStatus Payment status from webhook
 	 * @returns Corresponding order status
 	 */
-	private mapPaymentStatusToOrderStatus(paymentStatus: PaymentStatus): OrderStatus {
+	private mapPaymentStatusToOrderStatus(
+		paymentStatus: PaymentStatus,
+	): OrderStatus {
 		switch (paymentStatus) {
 			case PaymentStatus.SUCCESS:
 				return OrderStatus.CONFIRMED;
@@ -195,7 +272,10 @@ export class WebhookService {
 		});
 
 		await this.auditPaymentRepository.save(auditEntry);
-		this.logger.log(`Created audit log for orderId: ${order.id}`);
+		this.logger.debug('Created audit log', {
+			orderId: order.id,
+			auditEntry,
+		});
 	}
 
 	/**

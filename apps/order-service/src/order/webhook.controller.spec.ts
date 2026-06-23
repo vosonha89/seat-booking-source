@@ -65,7 +65,9 @@ describe('WebhookController', () => {
 			};
 
 			const errorMessage = 'Failed to process webhook';
-			webhookService.processWebhook.mockRejectedValue(new Error(errorMessage));
+			webhookService.processWebhook.mockRejectedValue(
+				new Error(errorMessage),
+			);
 
 			// Act
 			const response = await request(app.getHttpServer())

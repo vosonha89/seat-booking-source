@@ -45,10 +45,16 @@ export class SeatRepository implements ISeatRepository {
 	 * @param manager - Optional TypeORM entity manager for transaction support.
 	 * @returns Promise that resolves to the ISeat object or null if not found.
 	 */
-	public async findByIdForUpdate(id: string, manager?: EntityManager): Promise<ISeat | null> {
-		const repository = manager ? manager.getRepository(Seat) : this.seatRepository;
+	public async findByIdForUpdate(
+		id: string,
+		manager?: EntityManager,
+	): Promise<ISeat | null> {
+		const repository = manager
+			? manager.getRepository(Seat)
+			: this.seatRepository;
 
-		const seat = await repository.createQueryBuilder('seat')
+		const seat = await repository
+			.createQueryBuilder('seat')
 			.setLock('pessimistic_write')
 			.where('seat.id = :id', { id })
 			.getOne();
@@ -102,7 +108,9 @@ export class SeatRepository implements ISeatRepository {
 		seat: Partial<ISeat>,
 		manager?: EntityManager,
 	): Promise<ISeat> {
-		const repository = manager ? manager.getRepository(Seat) : this.seatRepository;
+		const repository = manager
+			? manager.getRepository(Seat)
+			: this.seatRepository;
 		const existingSeat = await repository.findOneBy({ id: seat.id });
 
 		if (!existingSeat) {
