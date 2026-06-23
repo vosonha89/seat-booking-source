@@ -13,6 +13,11 @@ export * from './payment.types';
  */
 export * from './seat.types';
 
+/**
+ * Re-export all SQS message type definitions.
+ */
+export * from './sqs.types';
+
 // Explicit re-exports for named constants
 import { SeatStatusEnum } from './seat.types';
 import { OrderStatus } from './order.types';

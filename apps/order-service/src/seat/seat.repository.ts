@@ -93,6 +93,37 @@ export class SeatRepository implements ISeatRepository {
 	}
 
 	/**
+	 * Updates a seat.
+	 * @param seat - Seat data to update.
+	 * @param manager - Optional TypeORM entity manager for transaction support.
+	 * @returns Promise that resolves to the updated ISeat object.
+	 */
+	public async update(
+		seat: Partial<ISeat>,
+		manager?: EntityManager,
+	): Promise<ISeat> {
+		const repository = manager ? manager.getRepository(Seat) : this.seatRepository;
+		const existingSeat = await repository.findOneBy({ id: seat.id });
+
+		if (!existingSeat) {
+			throw new Error(`Seat with ID ${seat.id} not found`);
+		}
+
+		const updatedSeat = repository.merge(existingSeat, seat);
+
+		if (seat.status === SeatStatusEnum.RESERVED && seat.reservedBy) {
+			updatedSeat.reservedBy = seat.reservedBy;
+			updatedSeat.reservedAt = new Date();
+		} else if (seat.status !== SeatStatusEnum.RESERVED) {
+			updatedSeat.reservedBy = null;
+			updatedSeat.reservedAt = null;
+		}
+
+		const savedSeat = await repository.save(updatedSeat);
+		return this.mapEntityToDto([savedSeat])[0];
+	}
+
+	/**
 	 * Maps TypeORM Seat entities to ISeat DTOs.
 	 * @param entities - Array of Seat entities.
 	 * @returns Array of ISeat DTOs.

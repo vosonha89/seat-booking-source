@@ -7,12 +7,14 @@ import { ISeatRepositorySymbol } from '../seat/tokens';
 import { OrderStatus, SeatStatusEnum } from '@seat-booking/shared-types';
 import { DataSource } from 'typeorm';
 import { ConflictException } from '@nestjs/common';
+import { SqsProducerService } from './sqs-producer.service';
 
 describe('OrderService', () => {
 	let service: OrderService;
 	let mockOrderRepository: jest.Mocked<IOrderRepository>;
 	let mockSeatRepository: jest.Mocked<ISeatRepository>;
 	let mockDataSource: Partial<DataSource>;
+	let mockSqsProducerService: Partial<SqsProducerService>;
 
 	beforeEach(async () => {
 		// Create mock repositories
@@ -20,6 +22,8 @@ describe('OrderService', () => {
 			createOrder: jest.fn(),
 			findById: jest.fn(),
 			updateStatus: jest.fn(),
+			findByIdForUpdate: jest.fn(),
+			update: jest.fn(),
 		};
 
 		mockSeatRepository = {
@@ -27,10 +31,15 @@ describe('OrderService', () => {
 			findById: jest.fn(),
 			findAll: jest.fn(),
 			updateStatus: jest.fn(),
+			update: jest.fn(),
 		};
 
 		mockDataSource = {
 			transaction: jest.fn(),
+		};
+
+		mockSqsProducerService = {
+			sendPaymentProcessingMessage: jest.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({
@@ -50,6 +59,10 @@ describe('OrderService', () => {
 				{
 					provide: DataSource,
 					useValue: mockDataSource,
+				},
+				{
+					provide: SqsProducerService,
+					useValue: mockSqsProducerService,
 				},
 			],
 		}).compile();

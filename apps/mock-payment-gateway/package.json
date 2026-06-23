@@ -26,6 +26,7 @@
     "@seat-booking/base-logging": "^1.0.0",
     "@sentry/integrations": "^7.120.4",
     "@sentry/node": "^7.120.4",
+    "axios": "^1.18.0",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"
   },
@@ -33,6 +34,7 @@
     "@nestjs/cli": "^10.0.0",
     "@nestjs/schematics": "^10.0.0",
     "@nestjs/testing": "^10.0.0",
+    "@types/axios": "^0.9.36",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",

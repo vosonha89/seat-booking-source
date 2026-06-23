@@ -22,4 +22,13 @@ export interface IOrderService {
 	 * @returns Promise that resolves to the IOrder object or null if not found.
 	 */
 	findById(id: string): Promise<IOrder | null>;
+
+	/**
+	 * Updates the payment status of an order.
+	 * @param orderId - ID of the order to update.
+	 * @param status - New payment status.
+	 * @returns Promise that resolves to the updated IOrder object.
+	 * @throws Error if the order is not found.
+	 */
+	updatePaymentStatus(orderId: string, status: 'CONFIRMED' | 'FAILED'): Promise<IOrder>;
 }

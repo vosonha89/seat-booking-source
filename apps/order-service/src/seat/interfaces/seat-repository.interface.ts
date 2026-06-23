@@ -36,4 +36,12 @@ export interface ISeatRepository {
 	 * @throws Error if seat with specified ID is not found.
 	 */
 	updateStatus(id: string, status: SeatStatus, reservedBy?: string): Promise<ISeat>;
+
+	/**
+	 * Updates a seat.
+	 * @param seat - Seat data to update.
+	 * @param manager - Optional TypeORM entity manager for transaction support.
+	 * @returns Promise that resolves to the updated ISeat object.
+	 */
+	update(seat: Partial<ISeat>, manager?: EntityManager): Promise<ISeat>;
 }

@@ -6,6 +6,7 @@ import { OrderService } from './order.service';
 import { OrderRepository } from './order.repository';
 import { IOrderServiceSymbol, IOrderRepositorySymbol } from './tokens';
 import { SeatModule } from '../seat/seat.module';
+import { SqsProducerService } from './sqs-producer.service';
 
 /**
  * Order module for managing order-related endpoints and business logic.
@@ -22,6 +23,7 @@ import { SeatModule } from '../seat/seat.module';
 			provide: IOrderRepositorySymbol,
 			useClass: OrderRepository,
 		},
+		SqsProducerService,
 	],
 	exports: [
 		IOrderServiceSymbol,

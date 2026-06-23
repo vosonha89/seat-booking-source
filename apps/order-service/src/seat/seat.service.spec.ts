@@ -15,6 +15,7 @@ describe('SeatService', () => {
 			findById: jest.fn(),
 			findByIdForUpdate: jest.fn(),
 			updateStatus: jest.fn(),
+			update: jest.fn(),
 		};
 
 		const module: TestingModule = await Test.createTestingModule({

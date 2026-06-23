@@ -47,6 +47,24 @@ export class OrderRepository implements IOrderRepository {
 	}
 
 	/**
+	 * Finds an order by its ID with pessimistic write lock.
+	 * @param id - Unique identifier of the order.
+	 * @param manager - TypeORM entity manager for transaction support.
+	 * @returns Promise that resolves to the IOrder object or null if not found.
+	 */
+	public async findByIdForUpdate(id: string, manager: EntityManager): Promise<IOrder | null> {
+		const repository = manager.getRepository(Order);
+		const order = await repository.findOne({
+			where: { id },
+			lock: { mode: 'pessimistic_write' },
+		});
+		if (!order) {
+			return null;
+		}
+		return this.mapEntityToDto(order);
+	}
+
+	/**
 	 * Updates the status of an order.
 	 * @param id - Unique identifier of the order.
 	 * @param status - New status for the order.
@@ -71,6 +89,30 @@ export class OrderRepository implements IOrderRepository {
 
 		const updatedOrder = await repository.save(order);
 		return this.mapEntityToDto(updatedOrder);
+	}
+
+	/**
+	 * Updates an order.
+	 * @param order - Order data to update.
+	 * @param manager - Optional TypeORM entity manager for transaction support.
+	 * @returns Promise that resolves to the updated IOrder object.
+	 */
+	public async update(
+		order: Partial<IOrder>,
+		manager?: EntityManager,
+	): Promise<IOrder> {
+		const repository = manager ? manager.getRepository(Order) : this.orderRepository;
+		const existingOrder = await repository.findOneBy({ id: order.id });
+
+		if (!existingOrder) {
+			throw new Error(`Order with ID ${order.id} not found`);
+		}
+
+		const updatedOrder = repository.merge(existingOrder, order);
+		updatedOrder.updatedAt = new Date();
+
+		const savedOrder = await repository.save(updatedOrder);
+		return this.mapEntityToDto(savedOrder);
 	}
 
 	/**
